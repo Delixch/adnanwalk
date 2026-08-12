@@ -156,6 +156,17 @@ window.addEventListener('DOMContentLoaded', () => {
 const canvas = document.getElementById('webgl-canvas');
 const scene = new THREE.Scene();
 
+// Cache variables for skills panel restoration in mobile accordion layout
+let originalSkillsPanelParent = null;
+let originalSkillsPanelNextSibling = null;
+
+// Initialize caches as soon as script runs (since DOM is already parsed in module script)
+const initialSkillsPanel = document.getElementById('skills-detail-panel');
+if (initialSkillsPanel) {
+  originalSkillsPanelParent = initialSkillsPanel.parentNode;
+  originalSkillsPanelNextSibling = initialSkillsPanel.nextSibling;
+}
+
 // Add deep space fog to give a strong sense of distance and depth
 scene.fog = new THREE.FogExp2(0x030008, 0.018);
 
@@ -198,6 +209,23 @@ window.addEventListener('resize', () => {
   updateCameraFOV();
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  
+  // Restore/adjust skills details panel placement on desktop/mobile layout transition
+  const activeCard = document.querySelector('.skill-card.active');
+  const skillsPanel = document.getElementById('skills-detail-panel');
+  if (window.innerWidth >= 768) {
+    if (skillsPanel && originalSkillsPanelParent && skillsPanel.parentNode !== originalSkillsPanelParent) {
+      originalSkillsPanelParent.insertBefore(skillsPanel, originalSkillsPanelNextSibling);
+      skillsPanel.style.display = 'block';
+    }
+  } else {
+    if (activeCard && skillsPanel && skillsPanel.parentNode !== activeCard) {
+      skillsPanel.style.display = 'block';
+      activeCard.appendChild(skillsPanel);
+    } else if (!activeCard && skillsPanel) {
+      skillsPanel.style.display = 'none';
+    }
+  }
 });
 
 // --- 2. LIGHTS (Brighter and more dynamic to highlight 3D volume) ---
@@ -1741,23 +1769,72 @@ skillCards.forEach((card, idx) => {
   card.style.cursor = 'pointer';
   card.addEventListener('click', () => {
     console.log("Skill card clicked:", idx);
-    skillCards.forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
     
-    // Play the swoosh reveal sound
+    const isMobile = window.innerWidth < 768;
+    const isAlreadyActive = card.classList.contains('active');
+    
+    // Play the swoosh reveal sound (triggers on every click)
     playRevealSound();
     
-    const data = skillDataList[idx];
-    if (data && skillsPanelTitle && skillsPanelDesc) {
-      console.log("Updating HTML skills panel content to:", data.title);
-      skillsPanelTitle.textContent = data.title;
-      skillsPanelDesc.textContent = data.desc;
-      
-      // Trigger neon glitch flash effect
+    if (isMobile) {
+      if (isAlreadyActive) {
+        // Toggle close accordion
+        card.classList.remove('active');
+        if (skillsPanel) {
+          skillsPanel.style.display = 'none';
+          // Move back to original parent to keep DOM structure clean
+          if (originalSkillsPanelParent) {
+            originalSkillsPanelParent.insertBefore(skillsPanel, originalSkillsPanelNextSibling);
+          }
+        }
+      } else {
+        // Open accordion
+        skillCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        
+        // Update content
+        const data = skillDataList[idx];
+        if (data && skillsPanelTitle && skillsPanelDesc) {
+          skillsPanelTitle.textContent = data.title;
+          skillsPanelDesc.textContent = data.desc;
+        }
+        
+        // Move the panel inside the clicked card in the DOM
+        if (skillsPanel) {
+          skillsPanel.style.display = 'block';
+          card.appendChild(skillsPanel); // Append under card text
+          
+          // Trigger neon glitch flash effect
+          skillsPanel.classList.remove('update-glitch');
+          skillsPanel.offsetHeight; // Force reflow
+          skillsPanel.classList.add('update-glitch');
+        }
+      }
+    } else {
+      // Desktop Layout: Ensure panel is in its original place
+      if (skillsPanel && skillsPanel.parentNode !== originalSkillsPanelParent) {
+        if (originalSkillsPanelParent) {
+          originalSkillsPanelParent.insertBefore(skillsPanel, originalSkillsPanelNextSibling);
+        }
+      }
       if (skillsPanel) {
-        skillsPanel.classList.remove('update-glitch');
-        skillsPanel.offsetHeight; // Force reflow
-        skillsPanel.classList.add('update-glitch');
+        skillsPanel.style.display = 'block';
+      }
+      
+      skillCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      
+      const data = skillDataList[idx];
+      if (data && skillsPanelTitle && skillsPanelDesc) {
+        skillsPanelTitle.textContent = data.title;
+        skillsPanelDesc.textContent = data.desc;
+        
+        // Trigger neon glitch flash effect
+        if (skillsPanel) {
+          skillsPanel.classList.remove('update-glitch');
+          skillsPanel.offsetHeight; // Force reflow
+          skillsPanel.classList.add('update-glitch');
+        }
       }
     }
   });

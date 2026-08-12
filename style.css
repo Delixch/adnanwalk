@@ -1320,10 +1320,15 @@ header {
     max-width: 100% !important;
     min-height: auto !important;
     padding: 1.4rem 1.2rem !important;
-    transform: none !important; /* Lays flat and clean on mobile */
-    margin: 0 0 1.2rem 0 !important;
-    border: 1px solid rgba(241, 48, 36, 0.3) !important;
+    /* Sideways 3D perspective rotation tilt on mobile inside the accordion! */
+    transform: perspective(1000px) rotateY(-11deg) rotateX(2deg) scale(0.96) !important;
+    transform-style: preserve-3d !important;
+    margin: 1.2rem auto 0.5rem auto !important;
+    border: 1px solid rgba(241, 48, 36, 0.4) !important;
     border-radius: 12px !important;
+    display: none; /* Hidden by default, toggled active by JS */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(241, 48, 36, 0.15) !important;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   .text-side {
