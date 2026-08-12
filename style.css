@@ -496,8 +496,8 @@ header {
 }
 
 #projects-detail-panel {
-  transform: translate3d(0, var(--panel-y, 0px), 0) perspective(1200px) rotateY(24deg) rotateX(4deg) !important;
-  transition: transform-style 0.4s; /* don't transition transform directly to avoid lag with GSAP variable animation */
+  position: relative;
+  transform: perspective(1200px) rotateY(24deg) rotateX(4deg) !important;
 }
 
 .text-side {
@@ -1580,14 +1580,14 @@ header {
     display: flex !important; /* Force show! */
     position: absolute !important;
     left: -20px !important;
-    top: 10% !important;
+    top: 0; /* No !important here so GSAP top animation overrides this */
     width: 300px !important;
     height: 480px !important;
     min-height: auto !important;
     z-index: 1 !important; /* Behind the cards */
     opacity: 0.45 !important; /* Semi-transparent holographic look */
     pointer-events: none !important; /* Click through it! */
-    transform: translate3d(0, var(--panel-y, 0px), 0) perspective(1000px) rotateY(25deg) rotateX(4deg) scale(0.85) !important;
+    transform: perspective(1000px) rotateY(25deg) rotateX(4deg) scale(0.85) !important;
     transform-style: preserve-3d !important;
     margin: 0 !important;
     border: 1px solid rgba(241, 48, 36, 0.3) !important;

@@ -2245,7 +2245,7 @@ const handleProjectsPanelShift = (item, idx) => {
     const targetY = cardRect.top - parentRect.top;
     
     gsap.to(projectsPanel, {
-      '--panel-y': `${targetY}px`,
+      top: `${targetY}px`,
       duration: 0.75,
       ease: 'power2.out',
       overwrite: 'auto'
