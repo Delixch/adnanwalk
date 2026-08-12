@@ -2045,9 +2045,6 @@ if (panelVideoEl) {
 // Wire up events
 htmlProjItems.forEach(item => {
   const link = item.querySelector('.project-link');
-// Wire up events
-htmlProjItems.forEach(item => {
-  const link = item.querySelector('.project-link');
   if (link) {
     link.addEventListener('click', (e) => {
       e.preventDefault();
