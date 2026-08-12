@@ -489,10 +489,21 @@ header {
   100% { transform: translateY(14px); opacity: 0; }
 }
 
-/* Projects Section Styling */
 .projects-content {
-  display: flex;
-  justify-content: flex-start;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  gap: 3.5rem !important;
+}
+
+.projects-content .text-side.right-aligned {
+  flex: 0 0 54% !important;
+  max-width: 580px !important;
+  margin: 0 !important;
 }
 
 #projects-detail-panel {
