@@ -2015,6 +2015,36 @@ window.addEventListener('click', () => {
   }
 });
 
+// Panel video layer — shown when Hyperion (idx 0) card is clicked
+const panelVideoLayer = document.getElementById('panel-video-layer');
+const panelVideoEl    = document.getElementById('panel-video-el');
+
+const openPanelVideo = () => {
+  if (!panelVideoLayer) return;
+  panelVideoLayer.style.display = 'flex';
+  if (panelVideoEl) {
+    panelVideoEl.currentTime = 0;
+    panelVideoEl.play().catch(() => {});
+  }
+};
+
+window.closePanelVideo = () => {
+  if (!panelVideoLayer) return;
+  panelVideoLayer.style.display = 'none';
+  if (panelVideoEl) panelVideoEl.pause();
+};
+
+// Play/pause on click (no fullscreen)
+if (panelVideoEl) {
+  panelVideoEl.addEventListener('click', () => {
+    if (panelVideoEl.paused) panelVideoEl.play().catch(() => {});
+    else panelVideoEl.pause();
+  });
+}
+
+// Wire up events
+htmlProjItems.forEach(item => {
+  const link = item.querySelector('.project-link');
 // Wire up events
 htmlProjItems.forEach(item => {
   const link = item.querySelector('.project-link');
@@ -2023,15 +2053,27 @@ htmlProjItems.forEach(item => {
       e.preventDefault();
       e.stopPropagation();
       const idx = parseInt(item.getAttribute('data-index'));
-      openProjectDetails(idx);
+      // idx 0 = Hyperion → video aç, modal açma
+      if (idx === 0) {
+        openPanelVideo();
+      } else {
+        window.closePanelVideo();
+        openProjectDetails(idx);
+      }
     });
   }
   // Allow clicking anywhere on item to open too
   item.addEventListener('click', () => {
     const idx = parseInt(item.getAttribute('data-index'));
-    openProjectDetails(idx);
+    if (idx === 0) {
+      openPanelVideo();
+    } else {
+      window.closePanelVideo();
+      openProjectDetails(idx);
+    }
   });
 });
+
 
 modalOverlay.addEventListener('click', closeProjectDetails);
 modalCloseBtn.addEventListener('click', closeProjectDetails);
