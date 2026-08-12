@@ -29,12 +29,15 @@ const showToast = (message, type = 'info', duration = 4000) => {
 
   const toast = document.createElement('div');
   toast.className = 'aw-toast';
+  // Success and error keep a green/red distinction on purpose: those two carry
+  // meaning and would become indistinguishable if folded into the palette.
+  // Info moves onto the brand gold.
   const colors = {
     success: 'linear-gradient(135deg,rgba(72,199,142,0.18),rgba(10,2,20,0.97))',
     error:   'linear-gradient(135deg,rgba(241,48,36,0.18),rgba(10,2,20,0.97))',
-    info:    'linear-gradient(135deg,rgba(100,100,255,0.15),rgba(10,2,20,0.97))',
+    info:    'linear-gradient(135deg,rgba(251,191,90,0.15),rgba(10,2,20,0.97))',
   };
-  const borders = { success: '#48c78e', error: '#f13024', info: '#6366f1' };
+  const borders = { success: '#48c78e', error: '#f13024', info: '#fbbf5a' };
   toast.style.cssText = `
     position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(30px);
     background:${colors[type]||colors.info};
@@ -512,7 +515,7 @@ for (let i = 0; i < tunnelSegmentCount; i++) {
 
   // Floating side columns to anchor the floor
   const colGeo = new THREE.CylinderGeometry(0.15, 0.15, 20, 8);
-  const colMat = new THREE.MeshStandardMaterial({ color: 0x1e1b4b, metalness: 0.8, roughness: 0.2 });
+  const colMat = new THREE.MeshStandardMaterial({ color: 0x2a1210, metalness: 0.8, roughness: 0.2 });
   
   const leftCol = new THREE.Mesh(colGeo, colMat);
   leftCol.position.set(-8.5, 0, zPos);
@@ -631,7 +634,7 @@ roomGroup.add(floorGrid3);
 const projectsData = [
   { color: 0xf13024, title: "Hyperion Engine", x: -5.5, y: 0.8, z: 22 }, // Red
   { color: 0xf97316, title: "Neon Nexus", x: -7.0, y: -0.8, z: 12 },   // Orange
-  { color: 0xec4899, title: "Aether Spaces", x: -8.5, y: 1.2, z: 2 }    // Pink/Accent
+  { color: 0xf97316, title: "Aether Spaces", x: -8.5, y: 1.2, z: 2 }    // Pink/Accent
 ];
 
 const monoliths = [];
@@ -701,8 +704,8 @@ for (let i = 0; i < nodeCount; i++) {
   const angle = (i / nodeCount) * Math.PI * 2;
   const radius = 4.2;
   const nodeMat = new THREE.MeshStandardMaterial({
-    color: i % 2 === 0 ? 0xf13024 : 0xec4899, // Red and Pink
-    emissive: i % 2 === 0 ? 0x3d0407 : 0x3d0520,
+    color: i % 2 === 0 ? 0xf13024 : 0xf97316, // Red and Pink
+    emissive: i % 2 === 0 ? 0x3d0407 : 0x3d1405,
     emissiveIntensity: 1.8,
     roughness: 0.2
   });
@@ -1342,8 +1345,8 @@ const update3DGalleryTextures = (mediaList) => {
       }
       
       // Turn border blue for videos, red for images
-      frame.border.material.color.setHex(item.type === 'video' ? 0x00f0ff : 0xf13024);
-      frame.border.material.emissive.setHex(item.type === 'video' ? 0x00f0ff : 0xf13024);
+      frame.border.material.color.setHex(item.type === 'video' ? 0xfbbf5a : 0xf13024);
+      frame.border.material.emissive.setHex(item.type === 'video' ? 0xfbbf5a : 0xf13024);
     } else {
       // Revert to placeholder canvas
       frame.screen.userData.mediaData = null;
@@ -2299,8 +2302,8 @@ const openPanelChaos = () => {
     el.style.left = `${Math.random() * 80}%`;
     el.style.top = `${Math.random() * 80}%`;
     el.style.fontSize = `${Math.random() * 20 + 20}px`;
-    el.style.color = Math.random() > 0.5 ? '#ff2a85' : '#00f0ff';
-    el.style.textShadow = `0 0 10px ${Math.random() > 0.5 ? '#ff2a85' : '#00f0ff'}`;
+    el.style.color = Math.random() > 0.5 ? '#f13024' : '#fbbf5a';
+    el.style.textShadow = `0 0 10px ${Math.random() > 0.5 ? '#f13024' : '#fbbf5a'}`;
     el.style.transition = 'left 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
     el.textContent = CHAOS_ICONS[Math.floor(Math.random() * CHAOS_ICONS.length)];
     
@@ -2324,7 +2327,7 @@ const openPanelChaos = () => {
         el.style.left = `${Math.random() * 85}%`;
         el.style.top = `${Math.random() * 85}%`;
         if (Math.random() > 0.7) {
-          el.style.color = Math.random() > 0.5 ? '#ffdd00' : '#48c78e';
+          el.style.color = Math.random() > 0.5 ? '#fbbf5a' : '#48c78e';
           el.style.fontSize = `${Math.random() * 20 + 20}px`;
         }
       }
@@ -2351,15 +2354,17 @@ const panelAILayer = document.getElementById('panel-ai-layer');
 const aiContainer  = document.getElementById('ai-container');
 let aiTimerId      = null;
 
+// Cycled through the three brand colours rather than each service's own brand,
+// so the rain stays inside the site's palette
 const AI_LIST = [
-  { name: 'CLAUDE.AI', url: 'claude.ai', color: '#00f0ff' },
-  { name: 'CHATGPT.COM', url: 'chatgpt.com', color: '#00ff66' },
-  { name: 'GEMINI.GOOGLE.COM', url: 'gemini.google', color: '#ffdd00' },
-  { name: 'DEEPSEEK.COM', url: 'deepseek.com', color: '#a855f7' },
-  { name: 'LLAMA.META.COM', url: 'llama.meta', color: '#ff2a85' },
-  { name: 'MIDJOURNEY.COM', url: 'midjourney.com', color: '#3b82f6' },
-  { name: 'V0.DEV', url: 'v0.dev', color: '#fb923c' },
-  { name: 'BOLT.NEW', url: 'bolt.new', color: '#48c78e' }
+  { name: 'CLAUDE.AI', url: 'claude.ai', color: '#fbbf5a' },
+  { name: 'CHATGPT.COM', url: 'chatgpt.com', color: '#f97316' },
+  { name: 'GEMINI.GOOGLE.COM', url: 'gemini.google', color: '#f13024' },
+  { name: 'DEEPSEEK.COM', url: 'deepseek.com', color: '#fbbf5a' },
+  { name: 'LLAMA.META.COM', url: 'llama.meta', color: '#f97316' },
+  { name: 'MIDJOURNEY.COM', url: 'midjourney.com', color: '#f13024' },
+  { name: 'V0.DEV', url: 'v0.dev', color: '#fbbf5a' },
+  { name: 'BOLT.NEW', url: 'bolt.new', color: '#f97316' }
 ];
 
 const openPanelAI = () => {
@@ -2397,8 +2402,8 @@ const openPanelAI = () => {
     drop.style.animationDuration = `${Math.random() * 3 + 3.5}s`;
     
     const aiItem = AI_LIST[Math.floor(Math.random() * AI_LIST.length)];
-    drop.style.color = '#00ff66'; // Matrix Green
-    drop.style.textShadow = '0 0 8px #00ff66';
+    drop.style.color = '#f97316'; // Matrix Green
+    drop.style.textShadow = '0 0 8px #f97316';
     drop.style.fontSize = `${Math.random() * 0.25 + 0.65}rem`;
     
     // Construct vertical word column
@@ -2415,7 +2420,7 @@ const openPanelAI = () => {
       const idx = Math.floor(Math.random() * spawnedColumns.length);
       const col = spawnedColumns[idx];
       if (col && col.drop) {
-        col.drop.style.color = Math.random() > 0.7 ? '#ffffff' : '#00ff66';
+        col.drop.style.color = Math.random() > 0.7 ? '#ffffff' : '#f97316';
         if (Math.random() > 0.8) {
           const nextItem = AI_LIST[Math.floor(Math.random() * AI_LIST.length)];
           col.drop.textContent = nextItem.url.toUpperCase().split('').join('\n');

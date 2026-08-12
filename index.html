@@ -147,41 +147,41 @@
             position: absolute;
             inset: 0;
             z-index: 21;
-            background: linear-gradient(135deg, rgba(8,2,18,0.99) 0%, rgba(20,2,40,0.97) 100%);
+            background: linear-gradient(135deg, rgba(13,3,3,0.99) 0%, rgba(30,6,5,0.97) 100%);
             border-radius: inherit;
             overflow: hidden;
             flex-direction: column;
             padding: 1.6rem;
-            color: #ff2a85;
+            color: #f13024;
             font-family: 'Space Grotesk', monospace;
-            border: 2px solid #ff2a85;
-            box-shadow: 0 0 35px rgba(255, 42, 133, 0.25), inset 0 0 20px rgba(255, 42, 133, 0.1);
+            border: 2px solid #f13024;
+            box-shadow: 0 0 35px rgba(241, 48, 36, 0.25), inset 0 0 20px rgba(241, 48, 36, 0.1);
           ">
             <!-- Close button -->
             <button onclick="closePanelChaos()" style="
               position: absolute; top: 14px; right: 14px;
-              background: rgba(0,0,0,0.6); border: 1px solid rgba(255, 42, 133, 0.5);
+              background: rgba(0,0,0,0.6); border: 1px solid rgba(241, 48, 36, 0.5);
               color: #fff; border-radius: 50%; width: 36px; height: 36px;
               font-size: 1.1rem; cursor: pointer; z-index: 30;
               display: flex; align-items: center; justify-content: center;
               backdrop-filter: blur(8px);
               transition: all 0.2s ease;
-            " onmouseover="this.style.borderColor='#ff2a85';this.style.boxShadow='0 0 10px #ff2a85';" onmouseout="this.style.borderColor='rgba(255, 42, 133, 0.5)';this.style.boxShadow='none';">×</button>
+            " onmouseover="this.style.borderColor='#f13024';this.style.boxShadow='0 0 10px #f13024';" onmouseout="this.style.borderColor='rgba(241, 48, 36, 0.5)';this.style.boxShadow='none';">×</button>
             
             <div style="
               font-size: 0.65rem;
-              color: #ff2a85;
+              color: #f13024;
               letter-spacing: 2px;
               text-transform: uppercase;
               margin-bottom: 0.8rem;
-              border-bottom: 1px solid rgba(255, 42, 133, 0.3);
+              border-bottom: 1px solid rgba(241, 48, 36, 0.3);
               padding-bottom: 5px;
               display: flex;
               justify-content: space-between;
               font-weight: bold;
             ">
               <span>⚠️ CRITICAL ERROR // CHAOS DETECTED</span>
-              <span class="neon-flicker" style="color: #00f0ff;">NEXUS ACTIVE</span>
+              <span class="neon-flicker" style="color: #fbbf5a;">NEXUS ACTIVE</span>
             </div>
             
             <!-- Dynamic Chaos Container -->
@@ -194,41 +194,41 @@
             position: absolute;
             inset: 0;
             z-index: 22;
-            background: linear-gradient(135deg, rgba(2,16,10,0.99) 0%, rgba(5,30,15,0.96) 100%);
+            background: linear-gradient(135deg, rgba(13,6,3,0.99) 0%, rgba(26,13,4,0.96) 100%);
             border-radius: inherit;
             overflow: hidden;
             flex-direction: column;
             padding: 1.6rem;
-            color: #00ff66;
+            color: #f97316;
             font-family: monospace;
-            border: 2px solid #00ff66;
-            box-shadow: 0 0 35px rgba(0, 255, 102, 0.25), inset 0 0 20px rgba(0, 255, 102, 0.1);
+            border: 2px solid #f97316;
+            box-shadow: 0 0 35px rgba(249, 115, 22, 0.25), inset 0 0 20px rgba(249, 115, 22, 0.1);
           ">
             <!-- Close button -->
             <button onclick="closePanelAI()" style="
               position: absolute; top: 14px; right: 14px;
-              background: rgba(0,0,0,0.6); border: 1px solid rgba(0, 255, 102, 0.5);
+              background: rgba(0,0,0,0.6); border: 1px solid rgba(249, 115, 22, 0.5);
               color: #fff; border-radius: 50%; width: 36px; height: 36px;
               font-size: 1.1rem; cursor: pointer; z-index: 30;
               display: flex; align-items: center; justify-content: center;
               backdrop-filter: blur(8px);
               transition: all 0.2s ease;
-            " onmouseover="this.style.borderColor='#00ff66';this.style.boxShadow='0 0 10px #00ff66';" onmouseout="this.style.borderColor='rgba(0, 255, 102, 0.5)';this.style.boxShadow='none';">×</button>
+            " onmouseover="this.style.borderColor='#f97316';this.style.boxShadow='0 0 10px #f97316';" onmouseout="this.style.borderColor='rgba(249, 115, 22, 0.5)';this.style.boxShadow='none';">×</button>
             
             <div style="
               font-size: 0.65rem;
-              color: #00ff66;
+              color: #f97316;
               letter-spacing: 2px;
               text-transform: uppercase;
               margin-bottom: 0.8rem;
-              border-bottom: 1px solid rgba(0, 255, 102, 0.3);
+              border-bottom: 1px solid rgba(249, 115, 22, 0.3);
               padding-bottom: 5px;
               display: flex;
               justify-content: space-between;
               font-weight: bold;
             ">
               <span>🧠 AI DIRECTORY // MATRIX STREAM</span>
-              <span class="neon-flicker" style="color: #ffdd00;">ONLINE</span>
+              <span class="neon-flicker" style="color: #fbbf5a;">ONLINE</span>
             </div>
             
             <!-- Dynamic AI Stream Container -->
@@ -556,7 +556,7 @@
       <!-- Submit button -->
       <button onclick="submitSecretPassword()" type="button" id="secret-pass-submit" style="
         width:100%;
-        background: linear-gradient(135deg, #f13024, #ff6b47);
+        background: linear-gradient(135deg, #f13024, #f97316);
         border:none; border-radius:12px;
         padding:0.9rem 1.5rem;
         font-family:'Syne',sans-serif;
@@ -704,7 +704,7 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      const COLORS = ['#f13024','#ff6b47','#ffdd00','#48c78e','#a855f7','#3b82f6','#fb923c'];
+      const COLORS = ['#f13024','#f97316','#fbbf5a','#ffffff'];
       const pieces = Array.from({length: 180}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height * 0.5 - canvas.height * 0.5,
