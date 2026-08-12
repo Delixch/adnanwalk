@@ -1547,6 +1547,16 @@ if (uploadFileInput) {
   uploadFileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Guard against Vercel serverless function request body limits (4.5MB total payload including base64)
+      const maxSizeBytes = 3.2 * 1024 * 1024; // 3.2MB limit
+      if (file.size > maxSizeBytes) {
+        alert(`Seçtiğiniz dosya çok büyük (${(file.size / (1024 * 1024)).toFixed(2)} MB).\nSunucu limitleri nedeniyle maksimum dosya boyutu 3MB olmalıdır. Lütfen görseli sıkıştırıp tekrar seçin.`);
+        uploadFileInput.value = '';
+        selectedFileName.textContent = "Fotoğraf Dosyası Seç";
+        selectedFileBase64 = null;
+        return;
+      }
+
       selectedFileNameRaw = file.name;
       selectedFileTypeRaw = file.type;
       selectedFileName.textContent = file.name;
@@ -1602,10 +1612,22 @@ if (uploadForm) {
         body: JSON.stringify(payload)
       });
       
-      const resData = await response.json();
+      // Safe parsing to prevent WebKit "The string did not match the expected pattern" DOMException on 413 HTML pages
+      let resData = {};
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        resData = await response.json();
+      } else {
+        const text = await response.text();
+        resData = { error: text || `HTTP ${response.status} Hatası` };
+      }
+      
+      if (response.status === 413) {
+        throw new Error("Dosya boyutu sunucu limitini aştı (Maksimum 4.5MB). Lütfen resmi sıkıştırıp tekrar deneyin.");
+      }
       
       if (!response.ok) {
-        throw new Error(resData.error || "Upload failed");
+        throw new Error(resData.error || "Yükleme başarısız oldu.");
       }
       
       uploadProgressFill.style.width = '100%';
