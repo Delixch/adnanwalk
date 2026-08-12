@@ -1,0 +1,25 @@
+# Bağımlılık klasörü
+node_modules/
+
+# Gizli API anahtarlarını ve şifreleri içeren yerel dosyalar (ASLA GITHUB'A GÖNDERİLMEMELİ!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Yapı ve derleme çıktıları
+dist/
+dist-ssr/
+
+# Yerel veritabanı yedeği
+database.json
+
+# Yerel yükleme önbelleği (sadece yerel mod için)
+public/uploads/
+
+# IDE / Editör dosyaları
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
