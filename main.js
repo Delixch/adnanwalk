@@ -209,6 +209,17 @@ if (initialSkillsPanel) {
   originalSkillsPanelNextSibling = initialSkillsPanel.nextSibling;
 }
 
+// Cache variables for projects panel restoration in mobile accordion layout
+let originalProjectsPanelParent = null;
+let originalProjectsPanelNextSibling = null;
+
+const initialProjectsPanel = document.getElementById('projects-detail-panel');
+if (initialProjectsPanel) {
+  originalProjectsPanelParent = initialProjectsPanel.parentNode;
+  originalProjectsPanelNextSibling = initialProjectsPanel.nextSibling;
+}
+
+
 // Add deep space fog to give a strong sense of distance and depth
 scene.fog = new THREE.FogExp2(0x030008, 0.018);
 
@@ -266,6 +277,23 @@ window.addEventListener('resize', () => {
       activeCard.appendChild(skillsPanel);
     } else if (!activeCard && skillsPanel) {
       skillsPanel.style.display = 'none';
+    }
+  }
+
+  // Restore/adjust projects details panel placement on desktop/mobile transition
+  const activeProjCard = document.querySelector('.project-item.active');
+  const projectsPanel = document.getElementById('projects-detail-panel');
+  if (window.innerWidth >= 768) {
+    if (projectsPanel && originalProjectsPanelParent && projectsPanel.parentNode !== originalProjectsPanelParent) {
+      originalProjectsPanelParent.insertBefore(projectsPanel, originalProjectsPanelNextSibling);
+      projectsPanel.style.display = 'block';
+    }
+  } else {
+    if (activeProjCard && projectsPanel && projectsPanel.parentNode !== activeProjCard) {
+      projectsPanel.style.display = 'block';
+      activeProjCard.appendChild(projectsPanel);
+    } else if (!activeProjCard && projectsPanel) {
+      projectsPanel.style.display = 'none';
     }
   }
 });
@@ -2114,14 +2142,38 @@ window.closePanelChaos = () => {
   if (panelChaosLayer) panelChaosLayer.style.display = 'none';
 };
 
-// Wire up events
-htmlProjItems.forEach(item => {
-  const link = item.querySelector('.project-link');
-  if (link) {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const idx = parseInt(item.getAttribute('data-index'));
+// Shift projects panel inside card on mobile (accordion) or keep in desktop parent
+const handleProjectsPanelShift = (item, idx) => {
+  const isMobile = window.innerWidth < 768;
+  const projectsPanel = document.getElementById('projects-detail-panel');
+  if (!projectsPanel) return;
+
+  const isAlreadyActive = item.classList.contains('active') && projectsPanel.parentNode === item && projectsPanel.style.display !== 'none';
+
+  if (isMobile) {
+    if (isAlreadyActive) {
+      // Toggle close
+      item.classList.remove('active');
+      projectsPanel.style.display = 'none';
+      if (originalProjectsPanelParent) {
+        originalProjectsPanelParent.insertBefore(projectsPanel, originalProjectsPanelNextSibling);
+      }
+      window.closePanelVideo();
+      window.closePanelChaos();
+    } else {
+      // Open accordion
+      htmlProjItems.forEach(c => c.classList.remove('active'));
+      item.classList.add('active');
+
+      projectsPanel.style.display = 'block';
+      item.appendChild(projectsPanel); // Move under card text
+
+      // Trigger visual glitch flash
+      projectsPanel.classList.remove('update-glitch');
+      projectsPanel.offsetHeight; // reflow
+      projectsPanel.classList.add('update-glitch');
+
+      // Trigger contents
       if (idx === 0) {
         window.closePanelChaos();
         openPanelVideo();
@@ -2131,13 +2183,25 @@ htmlProjItems.forEach(item => {
       } else {
         window.closePanelVideo();
         window.closePanelChaos();
-        openProjectDetails(idx);
       }
-    });
-  }
-  // Allow clicking anywhere on item to open too
-  item.addEventListener('click', () => {
-    const idx = parseInt(item.getAttribute('data-index'));
+    }
+  } else {
+    // Desktop layout
+    if (projectsPanel.parentNode !== originalProjectsPanelParent) {
+      if (originalProjectsPanelParent) {
+        originalProjectsPanelParent.insertBefore(projectsPanel, originalProjectsPanelNextSibling);
+      }
+    }
+    projectsPanel.style.display = 'block';
+
+    htmlProjItems.forEach(c => c.classList.remove('active'));
+    item.classList.add('active');
+
+    projectsPanel.classList.remove('update-glitch');
+    projectsPanel.offsetHeight;
+    projectsPanel.classList.add('update-glitch');
+
+    // Trigger contents
     if (idx === 0) {
       window.closePanelChaos();
       openPanelVideo();
@@ -2147,8 +2211,27 @@ htmlProjItems.forEach(item => {
     } else {
       window.closePanelVideo();
       window.closePanelChaos();
-      openProjectDetails(idx);
     }
+  }
+};
+
+// Wire up events
+htmlProjItems.forEach(item => {
+  const link = item.querySelector('.project-link');
+  const idx = parseInt(item.getAttribute('data-index'));
+
+  if (link) {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Link (İNCELE button) always opens full-detail sliding sidebar modal
+      openProjectDetails(idx);
+    });
+  }
+
+  // Clicking the card body behaves as toggle/accordion/inline-details
+  item.addEventListener('click', () => {
+    handleProjectsPanelShift(item, idx);
   });
 });
 
