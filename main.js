@@ -2134,7 +2134,92 @@ window.closePanelChaos = () => {
   if (panelChaosLayer) panelChaosLayer.style.display = 'none';
 };
 
-// Toggle projects panel layers (video or chaos) based on card clicks
+// ===== AI PANEL ENGINE =====
+const panelAILayer = document.getElementById('panel-ai-layer');
+const aiContainer  = document.getElementById('ai-container');
+let aiTimerId      = null;
+
+const AI_LIST = [
+  { name: 'CLAUDE.AI', url: 'claude.ai', color: '#00f0ff' },
+  { name: 'CHATGPT.COM', url: 'chatgpt.com', color: '#00ff66' },
+  { name: 'GEMINI.GOOGLE.COM', url: 'gemini.google', color: '#ffdd00' },
+  { name: 'DEEPSEEK.COM', url: 'deepseek.com', color: '#a855f7' },
+  { name: 'LLAMA.META.COM', url: 'llama.meta', color: '#ff2a85' },
+  { name: 'MIDJOURNEY.COM', url: 'midjourney.com', color: '#3b82f6' },
+  { name: 'V0.DEV', url: 'v0.dev', color: '#fb923c' },
+  { name: 'BOLT.NEW', url: 'bolt.new', color: '#48c78e' }
+];
+
+const openPanelAI = () => {
+  if (!panelAILayer || !aiContainer) return;
+  panelAILayer.style.display = 'flex';
+  aiContainer.innerHTML = '';
+  playRevealSound();
+
+  // 1. Add horizontal scrolling neon marquees (marquees scroll across the panel)
+  const rows = [15, 38, 62, 80];
+  rows.forEach((topPercent, index) => {
+    const marquee = document.createElement('div');
+    marquee.className = 'ai-marquee-el';
+    marquee.style.top = `${topPercent}%`;
+    
+    // Alt-direction scrolling for a more chaotic matrix look
+    const goLeft = index % 2 === 0;
+    marquee.style.animation = `${goLeft ? 'aiMarqueeLeft' : 'aiMarqueeRight'} ${index * 3 + 8}s infinite linear`;
+    
+    const aiItem = AI_LIST[index % AI_LIST.length];
+    marquee.style.color = aiItem.color;
+    // Repeat content to make marquee loop seamlessly
+    marquee.textContent = ` <<  ${aiItem.name} [${aiItem.url}]  >> `.repeat(4);
+    aiContainer.appendChild(marquee);
+  });
+
+  // 2. Add vertical Matrix rain drops of AI URLs
+  const columnsCount = 12;
+  const spawnedColumns = [];
+  for (let c = 0; c < columnsCount; c++) {
+    const drop = document.createElement('div');
+    drop.className = 'ai-rain-el';
+    drop.style.left = `${(c / columnsCount) * 85 + 5}%`;
+    drop.style.animationDelay = `${Math.random() * 4}s`;
+    drop.style.animationDuration = `${Math.random() * 3 + 3.5}s`;
+    
+    const aiItem = AI_LIST[Math.floor(Math.random() * AI_LIST.length)];
+    drop.style.color = '#00ff66'; // Matrix Green
+    drop.style.textShadow = '0 0 8px #00ff66';
+    drop.style.fontSize = `${Math.random() * 0.25 + 0.65}rem`;
+    
+    // Construct vertical word column
+    drop.textContent = aiItem.url.toUpperCase().split('').join('\n');
+    aiContainer.appendChild(drop);
+    spawnedColumns.push({ drop, item: aiItem });
+  }
+
+  // 3. AI digital noise interval
+  if (aiTimerId) clearInterval(aiTimerId);
+  aiTimerId = setInterval(() => {
+    // Randomly flash color / text in rain drops to look like decoding
+    if (Math.random() > 0.5) {
+      const idx = Math.floor(Math.random() * spawnedColumns.length);
+      const col = spawnedColumns[idx];
+      if (col && col.drop) {
+        col.drop.style.color = Math.random() > 0.7 ? '#ffffff' : '#00ff66';
+        if (Math.random() > 0.8) {
+          const nextItem = AI_LIST[Math.floor(Math.random() * AI_LIST.length)];
+          col.drop.textContent = nextItem.url.toUpperCase().split('').join('\n');
+        }
+      }
+    }
+    if (Math.random() > 0.9) playHoverSound();
+  }, 250);
+};
+
+window.closePanelAI = () => {
+  if (aiTimerId) { clearInterval(aiTimerId); aiTimerId = null; }
+  if (panelAILayer) panelAILayer.style.display = 'none';
+};
+
+// Toggle projects panel layers (video, chaos or AI) based on card clicks
 const handleProjectsPanelShift = (item, idx) => {
   const projectsPanel = document.getElementById('projects-detail-panel');
   if (!projectsPanel) return;
@@ -2158,13 +2243,20 @@ const handleProjectsPanelShift = (item, idx) => {
   // Trigger contents based on card clicked
   if (idx === 0) {
     window.closePanelChaos();
+    window.closePanelAI();
     openPanelVideo();
   } else if (idx === 1) {
     window.closePanelVideo();
+    window.closePanelAI();
     openPanelChaos();
+  } else if (idx === 2) {
+    window.closePanelVideo();
+    window.closePanelChaos();
+    openPanelAI();
   } else {
     window.closePanelVideo();
     window.closePanelChaos();
+    window.closePanelAI();
   }
 };
 

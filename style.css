@@ -1843,3 +1843,44 @@ header {
   animation: chaosRotate 6s infinite linear;
 }
 
+/* --- AI MATRIX RAIN & MARQUEE ANIMATIONS --- */
+@keyframes aiRainDrop {
+  0% { transform: translateY(-100%); opacity: 0; }
+  8% { opacity: 0.85; }
+  90% { opacity: 0.85; }
+  100% { transform: translateY(480px); opacity: 0; }
+}
+
+@keyframes aiMarqueeLeft {
+  0% { transform: translateX(110%); }
+  100% { transform: translateX(-110%); }
+}
+
+@keyframes aiMarqueeRight {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(110%); }
+}
+
+.ai-rain-el {
+  position: absolute;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 0.85rem;
+  letter-spacing: 0.4rem;
+  animation: aiRainDrop 4.8s infinite linear;
+  opacity: 0;
+  pointer-events: none;
+  font-weight: 700;
+}
+
+.ai-marquee-el {
+  position: absolute;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  pointer-events: none;
+  text-shadow: 0 0 8px currentColor;
+}
+
+
