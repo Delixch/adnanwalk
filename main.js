@@ -5,7 +5,49 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 // Register GSAP ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
+// --- TOAST NOTIFICATION UTILITY ---
+const showToast = (message, type = 'info', duration = 4000) => {
+  // Remove existing toasts
+  document.querySelectorAll('.aw-toast').forEach(t => t.remove());
+
+  const toast = document.createElement('div');
+  toast.className = 'aw-toast';
+  const colors = {
+    success: 'linear-gradient(135deg,rgba(72,199,142,0.18),rgba(10,2,20,0.97))',
+    error:   'linear-gradient(135deg,rgba(241,48,36,0.18),rgba(10,2,20,0.97))',
+    info:    'linear-gradient(135deg,rgba(100,100,255,0.15),rgba(10,2,20,0.97))',
+  };
+  const borders = { success: '#48c78e', error: '#f13024', info: '#6366f1' };
+  toast.style.cssText = `
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(30px);
+    background:${colors[type]||colors.info};
+    border:1px solid ${borders[type]||borders.info};
+    border-radius:16px; padding:1rem 1.6rem; z-index:99998;
+    font-family:'Space Grotesk',sans-serif; font-size:0.9rem; color:#fff;
+    box-shadow:0 8px 40px rgba(0,0,0,0.6); min-width:260px; text-align:center;
+    backdrop-filter:blur(20px);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    opacity:0; pointer-events:none;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+
+  // Auto-dismiss
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(30px)';
+    setTimeout(() => toast.remove(), 500);
+  }, duration);
+};
+
 // --- AUDIO ENGINE (Procedural Web Audio API) ---
+
 let audioCtx = null;
 let ambientOsc1 = null;
 let ambientOsc2 = null;
@@ -1683,6 +1725,19 @@ const openUploadModal = (type) => {
 const closeUploadModal = () => {
   if (!uploadModal) return;
   uploadModal.classList.remove('active');
+  // Reset image preview label
+  const labelEl = document.getElementById('file-label-text');
+  if (labelEl) {
+    labelEl.style.backgroundImage = 'none';
+    labelEl.style.minHeight = '';
+    const textSpan = labelEl.querySelector('#file-select-text');
+    if (textSpan) {
+      textSpan.style.background = '';
+      textSpan.style.padding = '';
+      textSpan.style.borderRadius = '';
+      textSpan.textContent = '📁 Medya Dosyası Seç';
+    }
+  }
   setTimeout(() => {
     uploadModal.style.display = 'none';
     document.body.style.overflow = '';
@@ -1736,9 +1791,9 @@ if (uploadFileInput) {
       // Guard against Vercel serverless function request body limits (4.5MB total payload including base64)
       const maxSizeBytes = 3.2 * 1024 * 1024; // 3.2MB limit
       if (file.size > maxSizeBytes) {
-        alert(`Seçtiğiniz dosya çok büyük (${(file.size / (1024 * 1024)).toFixed(2)} MB).\nSunucu limitleri nedeniyle maksimum dosya boyutu 3MB olmalıdır. Lütfen görseli sıkıştırıp tekrar seçin.`);
+        showToast(`📛 Dosya çok büyük! (${(file.size / (1024 * 1024)).toFixed(1)} MB) — Max 3MB olmalıdır.`, 'error', 5000);
         uploadFileInput.value = '';
-        selectedFileName.textContent = "Fotoğraf Dosyası Seç";
+        selectedFileName.textContent = 'Dosya seçilmedi';
         selectedFileBase64 = null;
         return;
       }
@@ -1746,6 +1801,31 @@ if (uploadFileInput) {
       selectedFileNameRaw = file.name;
       selectedFileTypeRaw = file.type;
       selectedFileName.textContent = file.name;
+
+      // Show image thumbnail preview inside the label
+      if (file.type.startsWith('image/')) {
+        const previewUrl = URL.createObjectURL(file);
+        const labelEl = document.getElementById('file-label-text');
+        if (labelEl) {
+          labelEl.style.backgroundImage = `url(${previewUrl})`;
+          labelEl.style.backgroundSize = 'cover';
+          labelEl.style.backgroundPosition = 'center';
+          labelEl.style.minHeight = '110px';
+          const textSpan = labelEl.querySelector('#file-select-text');
+          if (textSpan) {
+            textSpan.style.background = 'rgba(0,0,0,0.65)';
+            textSpan.style.borderRadius = '8px';
+            textSpan.style.padding = '4px 12px';
+            textSpan.textContent = '✅ ' + file.name;
+          }
+        }
+      } else {
+        const textSpan = document.getElementById('file-select-text');
+        if (textSpan) textSpan.textContent = '🎬 ' + file.name;
+      }
+
+      // Play a subtle sparkle reveal sound
+      playRevealSound();
       
       // Read file to Base64
       const reader = new FileReader();
@@ -1753,123 +1833,136 @@ if (uploadFileInput) {
         selectedFileBase64 = reader.result;
       };
       reader.onerror = () => {
-        alert("Dosya okunamadı!");
+        showToast('❌ Dosya okunamadı!', 'error');
       };
       reader.readAsDataURL(file);
     }
   });
 }
 
-// Handle upload submit action
-if (uploadForm) {
-  uploadForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    if (!selectedFileBase64) {
-      alert("Lütfen yüklenecek bir dosya seçin.");
-      return;
+// Handle upload submit action — called by the secret password overlay
+// This is exposed on window so the inline script in index.html can call it
+window._doActualUpload = async (pass) => {
+  if (!selectedFileBase64) {
+    throw new Error('Lütfen yüklenecek bir dosya seçin.');
+  }
+
+  const uploadMediaLocation = document.getElementById('upload-media-location');
+  const uploadMediaDescription = document.getElementById('upload-media-description');
+
+  const payload = {
+    password: pass,
+    fileData: selectedFileBase64,
+    fileName: selectedFileNameRaw,
+    fileType: selectedFileTypeRaw,
+    title: uploadMediaTitle.value || selectedFileNameRaw,
+    location: uploadMediaLocation ? uploadMediaLocation.value : '',
+    description: uploadMediaDescription ? uploadMediaDescription.value : ''
+  };
+
+  // Show progress in the background upload modal
+  uploadProgressWrapper.style.display = 'block';
+  uploadProgressFill.style.width = '20%';
+  uploadStatusText.textContent = 'Doğrulanıyor ve yükleniyor...';
+
+  try {
+    uploadProgressFill.style.width = '50%';
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    // Safe parsing to prevent WebKit crash on 413 HTML pages
+    let resData = {};
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.indexOf('application/json') !== -1) {
+      resData = await response.json();
+    } else {
+      const text = await response.text();
+      resData = { error: text || `HTTP ${response.status} Hatası` };
     }
-    
-    uploadSubmitBtn.disabled = true;
-    uploadProgressWrapper.style.display = 'block';
-    uploadProgressFill.style.width = '20%';
-    uploadStatusText.textContent = 'Şifre kontrol ediliyor ve dosya yükleniyor...';
-    
-    const uploadMediaLocation = document.getElementById('upload-media-location');
-    const uploadMediaDescription = document.getElementById('upload-media-description');
-    
-    const payload = {
-      password: uploadPasswordInput.value,
-      fileData: selectedFileBase64,
-      fileName: selectedFileNameRaw,
-      fileType: selectedFileTypeRaw,
-      title: uploadMediaTitle.value || selectedFileNameRaw,
-      location: uploadMediaLocation ? uploadMediaLocation.value : '',
-      description: uploadMediaDescription ? uploadMediaDescription.value : ''
-    };
-    
-    try {
-      uploadProgressFill.style.width = '50%';
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      // Safe parsing to prevent WebKit "The string did not match the expected pattern" DOMException on 413 HTML pages
-      let resData = {};
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        resData = await response.json();
-      } else {
-        const text = await response.text();
-        resData = { error: text || `HTTP ${response.status} Hatası` };
-      }
-      
-      if (response.status === 413) {
-        throw new Error("Dosya boyutu sunucu limitini aştı (Maksimum 4.5MB). Lütfen resmi sıkıştırıp tekrar deneyin.");
-      }
-      
-      if (!response.ok) {
-        throw new Error(resData.error || "Yükleme başarısız oldu.");
-      }
-      
-      uploadProgressFill.style.width = '100%';
-      uploadStatusText.textContent = 'Yükleme başarılı!';
-      
-      setTimeout(() => {
-        // Automatically authenticate user as admin upon successful upload
-        window.adnanIsAdmin = true;
-        window.adminPassword = uploadPasswordInput.value;
-        sessionStorage.setItem('adnan_walk_pass', uploadPasswordInput.value);
-        
-        closeUploadModal();
-        alert("Medya başarıyla yüklendi!");
-        fetchMedia(); // Refresh list
-      }, 500);
-      
-    } catch (err) {
-      console.error(err);
-      uploadProgressFill.style.width = '0%';
+
+    if (response.status === 413) {
       uploadProgressWrapper.style.display = 'none';
-      uploadSubmitBtn.disabled = false;
-      alert("Hata: " + err.message);
+      throw new Error('Dosya boyutu sunucu limitini aştı (Maksimum 4.5MB). Lütfen resmi sıkıştırıp tekrar deneyin.');
     }
+
+    if (response.status === 401) {
+      uploadProgressWrapper.style.display = 'none';
+      throw new Error('Yanlış şifre!');
+    }
+
+    if (!response.ok) {
+      uploadProgressWrapper.style.display = 'none';
+      throw new Error(resData.error || 'Yükleme başarısız oldu.');
+    }
+
+    uploadProgressFill.style.width = '100%';
+    uploadStatusText.textContent = '✅ Yükleme başarılı!';
+
+    // Auth user as admin on successful upload
+    window.adnanIsAdmin = true;
+    window.adminPassword = pass;
+    sessionStorage.setItem('adnan_walk_pass', pass);
+
+    setTimeout(() => {
+      // Close both overlays
+      closeUploadModal();
+      if (window.closeSecretPasswordOverlay) window.closeSecretPasswordOverlay();
+
+      // 🎊 Konfeti patla!
+      if (window.launchConfetti) window.launchConfetti();
+
+      // Güzel bildirim (alert yerine)
+      showToast('🎉 Harika! Medyan başarıyla yüklendi!', 'success');
+
+      fetchMedia(); // Refresh gallery
+    }, 500);
+
+  } catch(err) {
+    uploadProgressWrapper.style.display = 'none';
+    uploadProgressFill.style.width = '0%';
+    throw err; // Re-throw to secret overlay error handler
+  }
+};
+
+// Legacy form submit support (in case form fires naturally)
+if (uploadForm) {
+  uploadForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (window.openSecretPasswordOverlay) window.openSecretPasswordOverlay();
   });
 }
 
-// Handle Admin Login button click
+
+// Handle Admin Login button click (hidden button, triggered by easter egg)
 if (adminLoginBtn) {
   adminLoginBtn.addEventListener('click', async () => {
-    const pass = prompt("Lütfen Yönetici Şifresini Girin:");
+    const pass = prompt('🔐 Yönetici şifresini girin:');
     if (!pass) return;
     
     try {
-      // Verify password securely on backend using a dummy auth_check request
       const response = await fetch('/api/delete', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pass, id: 'auth_check' })
       });
       
       if (response.status === 401) {
-        alert("Hata: Yanlış yönetici şifresi!");
+        showToast('❌ Yanlış yönetici şifresi!', 'error');
         return;
       }
       
-      // Credentials are correct!
+      // Credentials correct!
       window.adnanIsAdmin = true;
       window.adminPassword = pass;
       sessionStorage.setItem('adnan_walk_pass', pass);
-      alert("Yönetici girişi başarılı! Silme özellikleri aktifleştirildi.");
-      render2DGallery(); // Re-render to show trash cans
+      showToast('🔓 Yönetici girişi başarılı! Silme özellikleri aktif.', 'success');
+      render2DGallery();
     } catch (err) {
       console.error(err);
-      alert("Sunucuyla bağlantı kurulamadı!");
+      showToast('❌ Sunucuya bağlanılamadı!', 'error');
     }
   });
 }
@@ -1892,14 +1985,14 @@ const deleteMediaItem = async (id) => {
     
     const resData = await response.json();
     if (!response.ok) {
-      throw new Error(resData.error || "Deletion failed");
+      throw new Error(resData.error || 'Deletion failed');
     }
     
-    alert("Medya başarıyla silindi!");
+    showToast('🗑️ Medya başarıyla silindi!', 'success');
     fetchMedia(); // Reload gallery
   } catch (err) {
     console.error(err);
-    alert("Hata: " + err.message);
+    showToast('❌ Hata: ' + err.message, 'error');
   }
 };
 

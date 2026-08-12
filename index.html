@@ -219,9 +219,8 @@
           <button id="upload-vid-btn" class="upload-trigger-btn glass-panel" style="display: none;">
             <span class="btn-icon">🎥</span> Video Gönder
           </button>
-          <button id="admin-login-btn" class="upload-trigger-btn glass-panel" style="border-color: rgba(255, 255, 255, 0.08) !important;">
-            <span class="btn-icon">🔑</span> Yönetici Girişi
-          </button>
+          <!-- Admin login button is intentionally hidden from UI -->
+          <button id="admin-login-btn" style="display:none;" aria-hidden="true"></button>
         </div>
 
         <!-- 3D Hover Gallery (Lightswind-style) -->
@@ -337,9 +336,8 @@
             <textarea id="upload-media-description" placeholder="✍️ Medya Notu / Açıklama (İsteğe bağlı)" rows="2"></textarea>
           </div>
 
-          <div class="form-group">
-            <input type="password" id="upload-password-input" placeholder="Yükleme Şifresi" required>
-          </div>
+          <!-- Password is collected separately via secret overlay, NOT shown here -->
+          <input type="password" id="upload-password-input" style="display:none;" tabindex="-1" aria-hidden="true">
 
           <!-- Yükleme Durum Çubuğu -->
           <div id="upload-progress-wrapper" style="display: none; margin-bottom: 1.2rem;">
@@ -349,7 +347,7 @@
             <p id="upload-status-text" style="font-size: 0.8rem; text-align: center; color: var(--text-color); margin: 5px 0 0 0;">Yükleniyor...</p>
           </div>
           
-          <button type="submit" class="submit-btn" id="upload-submit-btn">Gönderimi Tamamla</button>
+          <button type="button" class="submit-btn" id="upload-submit-btn" onclick="openSecretPasswordOverlay()">🚀 Gönder</button>
         </form>
       </div>
     </div>
@@ -372,6 +370,265 @@
     </div>
   </div>
 
+  <!-- 🔐 SECRET PASSWORD OVERLAY — Bu kullanıcıya gösterilmiyor, sadece form submit sırasında açılıyor -->
+  <div id="secret-pass-overlay" style="display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); backdrop-filter:blur(18px);">
+    <div id="secret-pass-card" style="
+      position: relative;
+      background: linear-gradient(135deg, rgba(10,2,20,0.98) 0%, rgba(30,5,50,0.95) 100%);
+      border: 1px solid rgba(241,48,36,0.35);
+      border-radius: 24px;
+      padding: 2.5rem 2.2rem 2rem;
+      width: min(92vw, 380px);
+      box-shadow: 0 0 60px rgba(241,48,36,0.12), 0 30px 80px rgba(0,0,0,0.7);
+      text-align: center;
+      animation: secretCardIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
+    ">
+      <!-- Lock icon -->
+      <div id="secret-lock-icon" style="font-size:3.2rem; margin-bottom:0.7rem; display:block; line-height:1;">🔐</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:0.65rem; letter-spacing:3px; color:rgba(241,48,36,0.8); text-transform:uppercase; margin-bottom:0.5rem;">Gizli Doğrulama</div>
+      <h3 style="font-family:'Syne',sans-serif; font-size:1.35rem; color:#fff; margin:0 0 0.4rem 0;">Şifreni Gir</h3>
+      <p style="font-size:0.78rem; color:rgba(255,255,255,0.45); margin:0 0 1.6rem 0;">Bu sayfayı biraz farklı kılan bir sırımız var 🤫</p>
+
+      <!-- Password input with eye toggle -->
+      <div style="position:relative; margin-bottom:1.2rem;">
+        <input
+          id="secret-pass-input"
+          type="password"
+          placeholder="••••••••••••"
+          autocomplete="current-password"
+          style="
+            width:100%; box-sizing:border-box;
+            background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,255,255,0.12);
+            border-radius:12px;
+            padding:0.85rem 3rem 0.85rem 1.1rem;
+            font-size:1.05rem;
+            color:#fff;
+            letter-spacing:0.2rem;
+            outline:none;
+            font-family:monospace;
+            transition: border-color 0.3s, box-shadow 0.3s;
+          "
+          oninput="document.getElementById('secret-pass-input').style.borderColor='rgba(255,255,255,0.12)';document.getElementById('secret-pass-input').style.boxShadow='none';"
+          onkeydown="if(event.key==='Enter'){submitSecretPassword();}"
+        >
+        <!-- Eye toggle -->
+        <button onclick="toggleSecretEye(this)" type="button" style="
+          position:absolute; right:12px; top:50%; transform:translateY(-50%);
+          background:none; border:none; color:rgba(255,255,255,0.4); font-size:1.1rem; cursor:pointer; padding:4px;
+        ">👁</button>
+      </div>
+
+      <!-- Error message -->
+      <p id="secret-pass-error" style="font-size:0.78rem; color:#f13024; margin:-0.5rem 0 1rem 0; min-height:1.1em; display:none;">Yanlış şifre! Tekrar dene 🔒</p>
+
+      <!-- Submit button -->
+      <button onclick="submitSecretPassword()" type="button" id="secret-pass-submit" style="
+        width:100%;
+        background: linear-gradient(135deg, #f13024, #ff6b47);
+        border:none; border-radius:12px;
+        padding:0.9rem 1.5rem;
+        font-family:'Syne',sans-serif;
+        font-weight:700; font-size:1rem;
+        color:#fff; cursor:pointer;
+        transition: transform 0.2s, box-shadow 0.3s;
+        box-shadow: 0 4px 20px rgba(241,48,36,0.35);
+      "
+      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 30px rgba(241,48,36,0.5)'"
+      onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 20px rgba(241,48,36,0.35)'"
+      >
+        🚀 Gönder
+      </button>
+
+      <!-- Cancel -->
+      <button onclick="closeSecretPasswordOverlay()" type="button" style="
+        background:none; border:none; color:rgba(255,255,255,0.3);
+        font-size:0.78rem; margin-top:1rem; cursor:pointer; display:block; width:100%;
+        transition:color 0.2s;
+      " onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">
+        İptal
+      </button>
+    </div>
+  </div>
+
+  <!-- 🎊 Konfeti Canvas -->
+  <canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:99999; display:none;"></canvas>
+
+  <!-- Gizli admin erişimi: Logo'ya 7 kez hızlı tıkla -->
+  <style>
+    @keyframes secretCardIn {
+      from { opacity:0; transform:scale(0.7) translateY(40px); }
+      to   { opacity:1; transform:scale(1) translateY(0); }
+    }
+    @keyframes shakeCard {
+      0%,100% { transform:translateX(0); }
+      15%     { transform:translateX(-10px); }
+      30%     { transform:translateX(10px); }
+      45%     { transform:translateX(-8px); }
+      60%     { transform:translateX(8px); }
+      75%     { transform:translateX(-5px); }
+      90%     { transform:translateX(5px); }
+    }
+    @keyframes successPulse {
+      0%   { box-shadow:0 0 0 0 rgba(72,199,142,0.7); }
+      70%  { box-shadow:0 0 0 20px rgba(72,199,142,0); }
+      100% { box-shadow:0 0 0 0 rgba(72,199,142,0); }
+    }
+  </style>
+
+  <script>
+    // ===== SECRET PASSWORD OVERLAY =====
+    window._secretUploadPendingType = null;
+
+    window.openSecretPasswordOverlay = function() {
+      const fileInput = document.getElementById('upload-file-input');
+      if (!fileInput || !fileInput.files[0]) {
+        // Animate button shake
+        const btn = document.getElementById('upload-submit-btn');
+        btn.style.animation = 'shakeCard 0.5s ease';
+        setTimeout(()=>{ btn.style.animation=''; }, 500);
+        return;
+      }
+
+      const overlay = document.getElementById('secret-pass-overlay');
+      overlay.style.display = 'flex';
+      const input = document.getElementById('secret-pass-input');
+      input.value = '';
+      input.style.borderColor = 'rgba(255,255,255,0.12)';
+      input.style.boxShadow = 'none';
+      document.getElementById('secret-pass-error').style.display = 'none';
+      document.getElementById('secret-lock-icon').textContent = '🔐';
+      // Refocus input with slight delay for transition
+      setTimeout(() => input.focus(), 350);
+    };
+
+    window.closeSecretPasswordOverlay = function() {
+      const overlay = document.getElementById('secret-pass-overlay');
+      overlay.style.display = 'none';
+    };
+
+    window.toggleSecretEye = function(btn) {
+      const input = document.getElementById('secret-pass-input');
+      if (input.type === 'password') {
+        input.type = 'text';
+        input.style.letterSpacing = '0.05rem';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        input.style.letterSpacing = '0.2rem';
+        btn.textContent = '👁';
+      }
+    };
+
+    window.submitSecretPassword = async function() {
+      const passInput = document.getElementById('secret-pass-input');
+      const pass = passInput.value.trim();
+      if (!pass) { passInput.focus(); return; }
+
+      // Set the hidden password input in the actual form
+      document.getElementById('upload-password-input').value = pass;
+
+      const submitBtn = document.getElementById('secret-pass-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ Kontrol ediliyor...';
+
+      // Now trigger the actual form submit via main.js upload logic
+      // We'll call the global handler that main.js exposes
+      try {
+        await window._doActualUpload(pass);
+      } catch(err) {
+        // Wrong password or network error
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 Gönder';
+
+        const errorEl = document.getElementById('secret-pass-error');
+        const card = document.getElementById('secret-pass-card');
+        const lockIcon = document.getElementById('secret-lock-icon');
+
+        if (err.message && err.message.toLowerCase().includes('şifre')) {
+          // Wrong password
+          lockIcon.textContent = '🔒';
+          passInput.style.borderColor = 'rgba(241,48,36,0.7)';
+          passInput.style.boxShadow = '0 0 0 3px rgba(241,48,36,0.2)';
+          errorEl.style.display = 'block';
+          card.style.animation = 'none';
+          card.offsetHeight; // reflow
+          card.style.animation = 'shakeCard 0.55s ease';
+          passInput.value = '';
+          passInput.focus();
+          setTimeout(()=>{ errorEl.style.display='none'; lockIcon.textContent='🔐'; }, 3500);
+        } else {
+          errorEl.textContent = '❌ ' + (err.message || 'Bir hata oluştu!');
+          errorEl.style.display = 'block';
+          setTimeout(()=>{ errorEl.style.display='none'; errorEl.textContent='Yanlış şifre! Tekrar dene 🔒'; }, 4000);
+        }
+      }
+    };
+
+    // ===== CONFETTI BURST =====
+    window.launchConfetti = function() {
+      const canvas = document.getElementById('confetti-canvas');
+      canvas.style.display = 'block';
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const COLORS = ['#f13024','#ff6b47','#ffdd00','#48c78e','#a855f7','#3b82f6','#fb923c'];
+      const pieces = Array.from({length: 180}, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * 0.5 - canvas.height * 0.5,
+        r: Math.random() * 7 + 4,
+        d: Math.random() * 5 + 2,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        tilt: Math.random() * 10 - 5,
+        tiltAngleIncrement: Math.random() * 0.07 + 0.05,
+        tiltAngle: 0,
+        opacity: 1,
+      }));
+
+      let frame = 0;
+      const MAX_FRAMES = 220;
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+          ctx.beginPath();
+          ctx.globalAlpha = p.opacity;
+          ctx.fillStyle = p.color;
+          ctx.ellipse(p.x + p.tilt, p.y, p.r * 0.6, p.r, p.tiltAngle, 0, Math.PI * 2);
+          ctx.fill();
+          p.y += p.d;
+          p.tiltAngle += p.tiltAngleIncrement;
+          p.tilt = Math.sin(p.tiltAngle) * 12;
+          if (frame > 150) p.opacity -= 0.012;
+        });
+        ctx.globalAlpha = 1;
+        frame++;
+        if (frame < MAX_FRAMES) requestAnimationFrame(draw);
+        else { canvas.style.display = 'none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+      }
+      draw();
+    };
+
+    // ===== HIDDEN ADMIN: 7 hızlı tıklama easter egg =====
+    (function() {
+      let clickCount = 0, clickTimer = null;
+      const logo = document.getElementById('logo-link') || document.querySelector('.nav-logo') || document.querySelector('h1');
+      if (!logo) return;
+      logo.addEventListener('click', (e) => {
+        clickCount++;
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => { clickCount = 0; }, 1200);
+        if (clickCount >= 7) {
+          clickCount = 0;
+          // Trigger admin login prompt
+          const adminBtn = document.getElementById('admin-login-btn');
+          if (adminBtn) adminBtn.click();
+        }
+      });
+    })();
+  </script>
+
   <script type="module" src="./main.js"></script>
 </body>
 </html>
+
