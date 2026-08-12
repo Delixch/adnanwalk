@@ -24,7 +24,9 @@ export default async function handler(req, res) {
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_KEY;
+  // Server side only, so use the service role when it is available and stay
+  // independent of whatever RLS policies the anon role happens to have.
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY;
   const uploadPassword = process.env.UPLOAD_PASSWORD || 'adnan2026walk';
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;

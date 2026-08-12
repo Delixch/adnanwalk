@@ -46,7 +46,9 @@ export default defineConfig(({ mode }) => {
   let supabase = null;
 
   if (isSupabaseConfigured) {
-    supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
+    // Prefer the service role: RLS on adnan_walk_media denies delete to anon,
+    // and a denied delete is reported as a success that removed nothing.
+    supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY || env.SUPABASE_KEY);
     console.log("[API] Supabase client initialized successfully.");
   } else {
     console.log("[API] Supabase credentials missing. Falling back to local database.json.");
@@ -314,14 +316,25 @@ export default defineConfig(({ mode }) => {
                     }
                   }
 
-                  // Delete from Database
+                  // Delete from Database. Requesting the removed rows back is what
+                  // exposes an RLS-blocked delete: PostgREST answers 200 with an
+                  // empty result instead of an error when policy denies it.
                   if (isSupabaseConfigured) {
-                    const { error } = await supabase
+                    const { data: deletedRows, error } = await supabase
                       .from('adnan_walk_media')
                       .delete()
-                      .eq('id', id);
-                    
+                      .eq('id', id)
+                      .select();
+
                     if (error) throw error;
+
+                    if (!deletedRows || deletedRows.length === 0) {
+                      console.error("[API] Delete affected zero rows for id:", id,
+                        "- SUPABASE_SERVICE_KEY is probably missing, so RLS blocked it.");
+                      res.statusCode = 500;
+                      res.end(JSON.stringify({ error: "Medya silinemedi: sunucunun veritabanında silme yetkisi yok." }));
+                      return;
+                    }
                     console.log("[API] Deleted row from Supabase:", id);
                   } else {
                     const db = getDatabase();

@@ -19,7 +19,11 @@ export default async function handler(req, res) {
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_KEY;
+  // Row level security on adnan_walk_media grants the anon role select and
+  // insert but not delete, and PostgREST reports a blocked delete as a success
+  // that removed zero rows. The service role bypasses RLS and never leaves the
+  // server, so deletion uses it when it is configured.
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY;
   const uploadPassword = process.env.UPLOAD_PASSWORD || 'adnan2026walk';
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -72,13 +76,25 @@ export default async function handler(req, res) {
       await cloudinary.uploader.destroy(id, { resource_type: resType });
     }
 
-    // Delete from Supabase
-    const { error: deleteError } = await supabase
+    // Delete from Supabase. Asking for the deleted rows back is what makes a
+    // policy-blocked delete detectable: without it PostgREST answers 200 and the
+    // row quietly stays, which is exactly how this bug went unnoticed.
+    const { data: deletedRows, error: deleteError } = await supabase
       .from('adnan_walk_media')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .select();
 
     if (deleteError) throw deleteError;
+
+    if (!deletedRows || deletedRows.length === 0) {
+      console.error('[api/delete] Delete affected zero rows for id:', id,
+        '- SUPABASE_SERVICE_KEY is probably missing, so RLS blocked it.');
+      res.status(500).json({
+        error: 'Medya silinemedi: sunucunun veritabanında silme yetkisi yok.'
+      });
+      return;
+    }
 
     res.status(200).json({ success: true });
   } catch (err) {
