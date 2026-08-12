@@ -1764,3 +1764,44 @@ header {
     padding: 0 0.5rem !important;
   }
 }
+
+/* --- CYBERPUNK CHAOS ANIMATIONS --- */
+@keyframes chaosFlash {
+  0%, 100% { opacity: 0.1; filter: drop-shadow(0 0 2px rgba(255,42,133,0.1)); }
+  45% { opacity: 0.3; }
+  50% { opacity: 1; filter: drop-shadow(0 0 8px #ff2a85); }
+  55% { opacity: 0.2; }
+  90% { opacity: 0.9; filter: drop-shadow(0 0 8px #00f0ff); }
+}
+
+@keyframes chaosBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scaleY(1.15) scaleX(0.85); filter: drop-shadow(0 10px 10px rgba(255,42,133,0.3)); }
+}
+
+@keyframes chaosGlitch {
+  0% { transform: translate(0, 0) skew(0deg) scale(1); }
+  5% { transform: translate(-6px, 3px) skew(-8deg) scale(1.1); color: #00f0ff; }
+  10% { transform: translate(6px, -3px) skew(8deg) scale(0.9); color: #ff2a85; }
+  15% { transform: translate(0, 0) skew(0deg) scale(1); }
+  100% { transform: translate(0, 0) skew(0deg) scale(1); }
+}
+
+@keyframes chaosRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.chaos-flash-el {
+  animation: chaosFlash 1.5s infinite ease-in-out;
+}
+.chaos-bounce-el {
+  animation: chaosBounce 0.9s infinite ease-in-out;
+}
+.chaos-glitch-el {
+  animation: chaosGlitch 1.2s infinite ease-in-out;
+}
+.chaos-rotate-el {
+  animation: chaosRotate 6s infinite linear;
+}
+

@@ -2042,6 +2042,78 @@ if (panelVideoEl) {
   });
 }
 
+// ===== CHAOS PANEL ENGINE =====
+const panelChaosLayer = document.getElementById('panel-chaos-layer');
+const chaosContainer  = document.getElementById('chaos-container');
+let chaosTimerId      = null;
+
+const CHAOS_ICONS = [
+  '👾', '🤖', '⚡', '🌀', '🌌', '🧬', '📡', '🖥️', '⚙️', '🧪', '☣️', '🔌', '💥', '🛸', '🚀',
+  '[]', '{}', '&&', '||', '!=', '=>', 'NaN', 'ERR', '0101', 'GLSL', 'GPU', 'NEXUS'
+];
+const CHAOS_ANIM_CLASSES = ['chaos-flash-el', 'chaos-bounce-el', 'chaos-glitch-el', 'chaos-rotate-el'];
+
+const openPanelChaos = () => {
+  if (!panelChaosLayer || !chaosContainer) return;
+  panelChaosLayer.style.display = 'flex';
+  chaosContainer.innerHTML = '';
+  playRevealSound();
+
+  // Create 18 chaotic elements
+  const elements = [];
+  for (let i = 0; i < 18; i++) {
+    const el = document.createElement('div');
+    el.style.position = 'absolute';
+    el.style.left = `${Math.random() * 80}%`;
+    el.style.top = `${Math.random() * 80}%`;
+    el.style.fontSize = `${Math.random() * 20 + 20}px`;
+    el.style.color = Math.random() > 0.5 ? '#ff2a85' : '#00f0ff';
+    el.style.textShadow = `0 0 10px ${Math.random() > 0.5 ? '#ff2a85' : '#00f0ff'}`;
+    el.style.transition = 'left 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+    el.textContent = CHAOS_ICONS[Math.floor(Math.random() * CHAOS_ICONS.length)];
+    
+    // Add random animations
+    const classesToAdd = [CHAOS_ANIM_CLASSES[Math.floor(Math.random() * CHAOS_ANIM_CLASSES.length)]];
+    if (Math.random() > 0.6) classesToAdd.push(CHAOS_ANIM_CLASSES[Math.floor(Math.random() * CHAOS_ANIM_CLASSES.length)]);
+    el.className = classesToAdd.join(' ');
+
+    chaosContainer.appendChild(el);
+    elements.push(el);
+  }
+
+  // Chaos ticks
+  if (chaosTimerId) clearInterval(chaosTimerId);
+  chaosTimerId = setInterval(() => {
+    // 1. Teleport/jump 2 random elements to new places
+    for (let j = 0; j < 2; j++) {
+      const idx = Math.floor(Math.random() * elements.length);
+      const el = elements[idx];
+      if (el) {
+        el.style.left = `${Math.random() * 85}%`;
+        el.style.top = `${Math.random() * 85}%`;
+        if (Math.random() > 0.7) {
+          el.style.color = Math.random() > 0.5 ? '#ffdd00' : '#48c78e';
+          el.style.fontSize = `${Math.random() * 20 + 20}px`;
+        }
+      }
+    }
+
+    // 2. Change content of 1 random element
+    const changeIdx = Math.floor(Math.random() * elements.length);
+    if (elements[changeIdx]) {
+      elements[changeIdx].textContent = CHAOS_ICONS[Math.floor(Math.random() * CHAOS_ICONS.length)];
+    }
+
+    // 3. Occasional audio glitch click
+    if (Math.random() > 0.85) playHoverSound();
+  }, 350);
+};
+
+window.closePanelChaos = () => {
+  if (chaosTimerId) { clearInterval(chaosTimerId); chaosTimerId = null; }
+  if (panelChaosLayer) panelChaosLayer.style.display = 'none';
+};
+
 // Wire up events
 htmlProjItems.forEach(item => {
   const link = item.querySelector('.project-link');
@@ -2050,11 +2122,15 @@ htmlProjItems.forEach(item => {
       e.preventDefault();
       e.stopPropagation();
       const idx = parseInt(item.getAttribute('data-index'));
-      // idx 0 = Hyperion → video aç, modal açma
       if (idx === 0) {
+        window.closePanelChaos();
         openPanelVideo();
+      } else if (idx === 1) {
+        window.closePanelVideo();
+        openPanelChaos();
       } else {
         window.closePanelVideo();
+        window.closePanelChaos();
         openProjectDetails(idx);
       }
     });
@@ -2063,9 +2139,14 @@ htmlProjItems.forEach(item => {
   item.addEventListener('click', () => {
     const idx = parseInt(item.getAttribute('data-index'));
     if (idx === 0) {
+      window.closePanelChaos();
       openPanelVideo();
+    } else if (idx === 1) {
+      window.closePanelVideo();
+      openPanelChaos();
     } else {
       window.closePanelVideo();
+      window.closePanelChaos();
       openProjectDetails(idx);
     }
   });
