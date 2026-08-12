@@ -106,30 +106,51 @@ const initAudio = () => {
   masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
   masterGain.connect(audioCtx.destination);
 
-  // 1. Ambient Space Drone (Breathing spaceship engine hum)
+  // 1. Ambient Space Drone.
+  // The previous version read as an alarm rather than atmosphere, for three
+  // reasons: a sawtooth carries every harmonic and buzzes, a resonant filter
+  // sweeping 120-280Hz every eight seconds is the shape of a siren, and an exact
+  // perfect fifth held dead still sounds like a horn. This version drops the
+  // sawtooth, flattens the sweep, and gets its movement from two voices detuned
+  // by a fraction of a hertz so they drift in and out of phase instead.
   ambientFilter = audioCtx.createBiquadFilter();
   ambientFilter.type = 'lowpass';
-  ambientFilter.frequency.setValueAtTime(200, audioCtx.currentTime);
-  ambientFilter.Q.setValueAtTime(1.0, audioCtx.currentTime);
+  ambientFilter.frequency.setValueAtTime(320, audioCtx.currentTime);
+  ambientFilter.Q.setValueAtTime(0.6, audioCtx.currentTime);
 
   ambientGain = audioCtx.createGain();
-  ambientGain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+  ambientGain.gain.setValueAtTime(0.045, audioCtx.currentTime);
 
-  // Low frequency oscillator 1 (C2 - 65.4 Hz, C3 on mobile)
+  // Phone speakers cannot move enough air for A1, so the pad sits an octave up
+  const root = isMobileDevice ? 110 : 55;      // A1 / A2
+  const fifth = isMobileDevice ? 164.8 : 82.4; // E2 / E3
+
   ambientOsc1 = audioCtx.createOscillator();
-  ambientOsc1.type = 'sawtooth';
-  ambientOsc1.frequency.setValueAtTime(isMobileDevice ? 130.8 : 65.4, audioCtx.currentTime);
+  ambientOsc1.type = 'triangle';
+  ambientOsc1.frequency.setValueAtTime(root, audioCtx.currentTime);
 
-  // Low frequency oscillator 2 detuned (G2 - 98.0 Hz, mapped lower to 97.5Hz)
   ambientOsc2 = audioCtx.createOscillator();
-  ambientOsc2.type = 'triangle';
-  ambientOsc2.frequency.setValueAtTime(isMobileDevice ? 195 : 97.5, audioCtx.currentTime);
+  ambientOsc2.type = 'sine';
+  ambientOsc2.frequency.setValueAtTime(fifth, audioCtx.currentTime);
 
-  // Slow LFO to modulate filter cutoff frequency (creates dynamic depth changes)
+  // Third voice an octave above the root, detuned by 0.3Hz. That offset produces
+  // a beat every few seconds, which is what makes the pad feel alive without a
+  // periodic filter sweep doing it.
+  const ambientOsc3 = audioCtx.createOscillator();
+  ambientOsc3.type = 'sine';
+  ambientOsc3.frequency.setValueAtTime(root * 2 + 0.3, audioCtx.currentTime);
+
+  const osc3Gain = audioCtx.createGain();
+  osc3Gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  ambientOsc3.connect(osc3Gain);
+  osc3Gain.connect(ambientFilter);
+
+  // Very slow, shallow cutoff drift. Half the depth and less than half the rate
+  // of the original, so it reads as breathing rather than sweeping.
   const lfo = audioCtx.createOscillator();
-  lfo.frequency.setValueAtTime(0.12, audioCtx.currentTime); // 0.12Hz cycle
+  lfo.frequency.setValueAtTime(0.05, audioCtx.currentTime); // one cycle per 20s
   const lfoGain = audioCtx.createGain();
-  lfoGain.gain.setValueAtTime(80, audioCtx.currentTime);
+  lfoGain.gain.setValueAtTime(35, audioCtx.currentTime);
 
   lfo.connect(lfoGain);
   lfoGain.connect(ambientFilter.frequency);
@@ -142,6 +163,7 @@ const initAudio = () => {
   // Start hum nodes
   ambientOsc1.start();
   ambientOsc2.start();
+  ambientOsc3.start();
   lfo.start();
 
   // 2. Dynamic Scroll Whoosh (White Noise)
@@ -2873,7 +2895,9 @@ const animate = () => {
     // Scrolling opens the drone's lowpass so the pad breathes with the page
     // instead of sitting at a fixed 200Hz cutoff (the LFO still rides on top).
     if (ambientFilter) {
-      const targetCutoff = 200 + Math.min(smoothVelocity * 14, 900);
+      // Base matches the drone's resting cutoff, otherwise scrolling would drag
+      // the pad down to the old 200Hz and then release it, which is audible.
+      const targetCutoff = 320 + Math.min(smoothVelocity * 14, 900);
       ambientFilter.frequency.setTargetAtTime(targetCutoff, audioCtx.currentTime, 0.12);
     }
   }
