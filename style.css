@@ -1570,13 +1570,40 @@ header {
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
+  /* Projects background holographic panel on mobile */
+  #projects-detail-panel {
+    display: flex !important; /* Force show! */
+    position: absolute !important;
+    left: -20px !important;
+    top: 10% !important;
+    width: 300px !important;
+    height: 480px !important;
+    min-height: auto !important;
+    z-index: 1 !important; /* Behind the cards */
+    opacity: 0.45 !important; /* Semi-transparent holographic look */
+    pointer-events: none !important; /* Click through it! */
+    transform: perspective(1000px) rotateY(25deg) rotateX(4deg) scale(0.85) !important;
+    transform-style: preserve-3d !important;
+    margin: 0 !important;
+    border: 1px solid rgba(241, 48, 36, 0.3) !important;
+  }
+
+  #projects-detail-panel button {
+    display: none !important; /* Hide close button on mobile, it's just a background hologram */
+  }
+
+  .projects-content {
+    position: relative !important;
+    width: 100% !important;
+  }
+
   .text-side {
     max-width: 100% !important;
     width: 100% !important;
     align-self: center !important;
     text-align: center !important;
     padding: 1.5rem 1.2rem !important;
-    background: rgba(10, 5, 20, 0.5) !important;
+    background: rgba(10, 5, 20, 0.4) !important; /* Slightly transparent to let background hologram show through */
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
     border: 1px solid rgba(255, 255, 255, 0.05) !important;

@@ -281,20 +281,12 @@ window.addEventListener('resize', () => {
   }
 
   // Restore/adjust projects details panel placement on desktop/mobile transition
-  const activeProjCard = document.querySelector('.project-item.active');
   const projectsPanel = document.getElementById('projects-detail-panel');
-  if (window.innerWidth >= 768) {
-    if (projectsPanel && originalProjectsPanelParent && projectsPanel.parentNode !== originalProjectsPanelParent) {
+  if (projectsPanel) {
+    if (originalProjectsPanelParent && projectsPanel.parentNode !== originalProjectsPanelParent) {
       originalProjectsPanelParent.insertBefore(projectsPanel, originalProjectsPanelNextSibling);
-      projectsPanel.style.display = 'block';
     }
-  } else {
-    if (activeProjCard && projectsPanel && projectsPanel.parentNode !== activeProjCard) {
-      projectsPanel.style.display = 'block';
-      activeProjCard.appendChild(projectsPanel);
-    } else if (!activeProjCard && projectsPanel) {
-      projectsPanel.style.display = 'none';
-    }
+    projectsPanel.style.display = 'flex';
   }
 });
 
@@ -2142,76 +2134,37 @@ window.closePanelChaos = () => {
   if (panelChaosLayer) panelChaosLayer.style.display = 'none';
 };
 
-// Shift projects panel inside card on mobile (accordion) or keep in desktop parent
+// Toggle projects panel layers (video or chaos) based on card clicks
 const handleProjectsPanelShift = (item, idx) => {
-  const isMobile = window.innerWidth < 768;
   const projectsPanel = document.getElementById('projects-detail-panel');
   if (!projectsPanel) return;
 
-  const isAlreadyActive = item.classList.contains('active') && projectsPanel.parentNode === item && projectsPanel.style.display !== 'none';
-
-  if (isMobile) {
-    if (isAlreadyActive) {
-      // Toggle close
-      item.classList.remove('active');
-      projectsPanel.style.display = 'none';
-      if (originalProjectsPanelParent) {
-        originalProjectsPanelParent.insertBefore(projectsPanel, originalProjectsPanelNextSibling);
-      }
-      window.closePanelVideo();
-      window.closePanelChaos();
-    } else {
-      // Open accordion
-      htmlProjItems.forEach(c => c.classList.remove('active'));
-      item.classList.add('active');
-
-      projectsPanel.style.display = 'block';
-      item.appendChild(projectsPanel); // Move under card text
-
-      // Trigger visual glitch flash
-      projectsPanel.classList.remove('update-glitch');
-      projectsPanel.offsetHeight; // reflow
-      projectsPanel.classList.add('update-glitch');
-
-      // Trigger contents
-      if (idx === 0) {
-        window.closePanelChaos();
-        openPanelVideo();
-      } else if (idx === 1) {
-        window.closePanelVideo();
-        openPanelChaos();
-      } else {
-        window.closePanelVideo();
-        window.closePanelChaos();
-      }
+  // Keep panel in its desktop position, CSS handles the overlay placement behind cards on mobile
+  if (projectsPanel.parentNode !== originalProjectsPanelParent) {
+    if (originalProjectsPanelParent) {
+      originalProjectsPanelParent.insertBefore(projectsPanel, originalProjectsPanelNextSibling);
     }
+  }
+  projectsPanel.style.display = 'flex';
+
+  htmlProjItems.forEach(c => c.classList.remove('active'));
+  item.classList.add('active');
+
+  // Trigger glitch flash animation
+  projectsPanel.classList.remove('update-glitch');
+  projectsPanel.offsetHeight; // reflow
+  projectsPanel.classList.add('update-glitch');
+
+  // Trigger contents based on card clicked
+  if (idx === 0) {
+    window.closePanelChaos();
+    openPanelVideo();
+  } else if (idx === 1) {
+    window.closePanelVideo();
+    openPanelChaos();
   } else {
-    // Desktop layout
-    if (projectsPanel.parentNode !== originalProjectsPanelParent) {
-      if (originalProjectsPanelParent) {
-        originalProjectsPanelParent.insertBefore(projectsPanel, originalProjectsPanelNextSibling);
-      }
-    }
-    projectsPanel.style.display = 'block';
-
-    htmlProjItems.forEach(c => c.classList.remove('active'));
-    item.classList.add('active');
-
-    projectsPanel.classList.remove('update-glitch');
-    projectsPanel.offsetHeight;
-    projectsPanel.classList.add('update-glitch');
-
-    // Trigger contents
-    if (idx === 0) {
-      window.closePanelChaos();
-      openPanelVideo();
-    } else if (idx === 1) {
-      window.closePanelVideo();
-      openPanelChaos();
-    } else {
-      window.closePanelVideo();
-      window.closePanelChaos();
-    }
+    window.closePanelVideo();
+    window.closePanelChaos();
   }
 };
 
