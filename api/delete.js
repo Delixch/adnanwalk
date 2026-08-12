@@ -82,7 +82,9 @@ export default async function handler(req, res) {
 
     res.status(200).json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message || 'Silme sırasında sunucu hatası oluştu.' });
+    // Raw driver messages are logged, never returned: they leak internals and
+    // mean nothing to the person looking at the gallery.
+    console.error('[api/delete]', err);
+    res.status(500).json({ error: 'Silme sırasında sunucu hatası oluştu. Lütfen tekrar deneyin.' });
   }
 }

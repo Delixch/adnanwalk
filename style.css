@@ -1129,16 +1129,18 @@ header {
 .hover-gallery-3d {
   position: relative;
   width: 100%;
-  max-width: 1300px;
-  margin: 2rem auto 0 auto;
-  height: 62vh;
-  min-height: 350px;
-  max-height: 600px;
-  background: #0a0a0a;
+  max-width: 1000px;
+  margin: 1.5rem auto 0 auto;
+  height: 44vh;
+  min-height: 260px;
+  max-height: 420px;
+  background: radial-gradient(120% 100% at 50% 0%, #12070c 0%, #08070a 60%, #060409 100%);
   border-radius: 20px;
   overflow: hidden;
   display: flex;
   align-items: stretch;
+  gap: 6px;
+  padding: 7px;
   perspective: 3500px;
   border: 1px solid rgba(255,255,255,0.04);
 }
@@ -1148,17 +1150,71 @@ header {
   min-width: 0;
   position: relative;
   overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   transition:
     flex 1.2s cubic-bezier(0.25, 1, 0.5, 1),
     filter 1.2s cubic-bezier(0.25, 1, 0.5, 1),
-    transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+    border-color 0.6s ease,
+    box-shadow 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   filter: grayscale(1) brightness(0.5);
   cursor: pointer;
   transform-origin: center center;
 }
 
-.hg3d-strip:not(:last-child) {
-  border-right: 0.5px solid rgba(255,255,255,0.06);
+/* Rotating light that travels around the card edge. The angle is a registered
+   custom property so it can be animated; browsers without @property still get a
+   static lit edge rather than nothing. */
+@property --hg3d-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes hg3dBeamSpin {
+  to { --hg3d-angle: 360deg; }
+}
+
+.hg3d-strip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--hg3d-angle),
+    transparent 0deg,
+    transparent 55deg,
+    var(--primary-color) 95deg,
+    var(--secondary-color) 125deg,
+    var(--accent-color) 155deg,
+    transparent 205deg,
+    transparent 360deg
+  );
+  /* Punch out the middle so only a hairline ring of the gradient survives */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Only the cards the user is actually looking at pay for the animation */
+.hg3d-strip.active::after,
+.hg3d-strip:hover::after {
+  animation: hg3dBeamSpin 4.5s linear infinite;
+}
+
+.hg3d-strip.active::after {
+  opacity: 1;
+}
+
+.hg3d-strip:hover::after {
+  opacity: 0.55;
 }
 
 .hg3d-strip.active,
@@ -1199,6 +1255,16 @@ header {
 .hg3d-strip.active {
   transform: perspective(3500px) rotateY(0deg) translateZ(0px);
   z-index: 2;
+  border-color: rgba(241, 48, 36, 0.28);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.45),
+    0 0 16px rgba(241, 48, 36, 0.12);
+}
+
+/* The neighbours sit behind the active card, so their edge stays quiet */
+.hg3d-strip.neighbor-l,
+.hg3d-strip.neighbor-r {
+  border-color: rgba(255, 255, 255, 0.04);
 }
 
 /* Info overlay on active strip */
@@ -1976,5 +2042,12 @@ header {
 
   .project-list {
     scroll-behavior: auto !important;
+  }
+
+  /* Keep the lit edge, park it at a fixed angle instead of spinning */
+  .hg3d-strip.active::after,
+  .hg3d-strip:hover::after {
+    animation: none !important;
+    --hg3d-angle: 120deg;
   }
 }
