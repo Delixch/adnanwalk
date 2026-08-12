@@ -27,7 +27,7 @@
 
   <!-- Üst Menü (Solda Logo, Sağda Sosyal Linkler) -->
   <header>
-    <a href="#hero" class="logo">Adnan<span>.3D</span></a>
+    <a href="#hero" class="logo" id="logo-link">Adnan<span>.3D</span></a>
     <div class="social-links">
       <!-- YouTube -->
       <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="social-icon" title="YouTube">
@@ -612,8 +612,9 @@
     // ===== HIDDEN ADMIN: 7 hızlı tıklama easter egg =====
     (function() {
       let clickCount = 0, clickTimer = null;
-      const logo = document.getElementById('logo-link') || document.querySelector('.nav-logo') || document.querySelector('h1');
+      const logo = document.getElementById('logo-link') || document.querySelector('.logo') || document.querySelector('h1');
       if (!logo) return;
+      logo.style.cursor = 'pointer'; // already is, but make sure
       logo.addEventListener('click', (e) => {
         clickCount++;
         clearTimeout(clickTimer);
