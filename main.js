@@ -2,6 +2,23 @@ import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+// The browser restores the previous scroll position by default, so reopening the
+// page dropped the visitor wherever they left off, usually the contact section at
+// the very bottom. This is a scroll-driven intro, so it must always start at the
+// top. An explicit #hash is still honoured.
+//
+// This runs before registerPlugin on purpose: ScrollTrigger caches the current
+// scrollRestoration value when it initialises and writes it back after a refresh,
+// so setting it afterwards gets silently reverted to 'auto'.
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
+if (!window.location.hash) {
+  window.scrollTo(0, 0);
+  window.addEventListener('load', () => window.scrollTo(0, 0), { once: true });
+}
+
 // Register GSAP ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
@@ -1358,7 +1375,7 @@ const uploadStatusText = document.getElementById('upload-status-text');
 const uploadSubmitBtn = document.getElementById('upload-submit-btn');
 const fileSelectText = document.getElementById('file-select-text');
 
-let selectedFileBase64 = null;
+let selectedFile = null;
 let selectedFileNameRaw = '';
 let selectedFileTypeRaw = '';
 
@@ -1416,14 +1433,14 @@ const render2DGallery = () => {
   const filtered = currentMediaList.filter(item => item.type === activeCategory);
 
   if (filtered.length === 0) {
-    if (emptyState) emptyState.style.display = 'flex';
+    if (emptyState) emptyState.classList.remove('is-hidden');
     container.classList.remove('has-active');
     // Stop autoplay
     if (hg3dAutoPlayTimer) { clearInterval(hg3dAutoPlayTimer); hg3dAutoPlayTimer = null; }
     return;
   }
 
-  if (emptyState) emptyState.style.display = 'none';
+  if (emptyState) emptyState.classList.add('is-hidden');
   hg3dActiveIndex = 0;
 
   // ---- Build strips ----
@@ -1727,7 +1744,7 @@ const openUploadModal = (type) => {
   // Clear previous state
   uploadForm.reset();
   selectedFileName.textContent = 'Dosya seçilmedi';
-  selectedFileBase64 = null;
+  selectedFile = null;
   uploadProgressWrapper.style.display = 'none';
   uploadSubmitBtn.disabled = false;
   
@@ -1849,16 +1866,19 @@ if (uploadFileInput) {
   uploadFileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Guard against Vercel serverless function request body limits (4.5MB total payload including base64)
-      const maxSizeBytes = 3.2 * 1024 * 1024; // 3.2MB limit
+      // Files now go straight to Cloudinary, so the old 3.2MB ceiling (which
+      // existed only because the payload had to fit inside a serverless request)
+      // is gone. This limit is Cloudinary's own free tier video ceiling.
+      const maxSizeBytes = 100 * 1024 * 1024;
       if (file.size > maxSizeBytes) {
-        showToast(`📛 Dosya çok büyük! (${(file.size / (1024 * 1024)).toFixed(1)} MB) — Max 3MB olmalıdır.`, 'error', 5000);
+        showToast(`📛 Dosya çok büyük! (${(file.size / (1024 * 1024)).toFixed(1)} MB) — Max 100MB olmalıdır.`, 'error', 5000);
         uploadFileInput.value = '';
         selectedFileName.textContent = 'Dosya seçilmedi';
-        selectedFileBase64 = null;
+        selectedFile = null;
         return;
       }
 
+      selectedFile = file;
       selectedFileNameRaw = file.name;
       selectedFileTypeRaw = file.type;
       selectedFileName.textContent = file.name;
@@ -1887,47 +1907,164 @@ if (uploadFileInput) {
 
       // Play a subtle sparkle reveal sound
       playRevealSound();
-      
-      // Read file to Base64
-      const reader = new FileReader();
-      reader.onload = () => {
-        selectedFileBase64 = reader.result;
-      };
-      reader.onerror = () => {
-        showToast('❌ Dosya okunamadı!', 'error');
-      };
-      reader.readAsDataURL(file);
     }
   });
 }
 
+// Shrink oversized photos in the browser before they leave the device. A modern
+// phone photo is 12MP and several megabytes; nothing in this gallery is shown
+// larger than about 1300px, so the extra pixels cost upload time and nothing else.
+// Videos are passed through untouched: re-encoding them here is not feasible.
+const MAX_IMAGE_EDGE = 2560;
+const IMAGE_COMPRESS_THRESHOLD = 1.5 * 1024 * 1024;
+
+const compressImage = (file) => new Promise((resolve) => {
+  if (!file.type.startsWith('image/') || file.size <= IMAGE_COMPRESS_THRESHOLD) {
+    resolve(file);
+    return;
+  }
+
+  // GIFs lose their animation when redrawn onto a canvas
+  if (file.type === 'image/gif') {
+    resolve(file);
+    return;
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  const img = new Image();
+
+  img.onload = () => {
+    URL.revokeObjectURL(objectUrl);
+
+    const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(img.width, img.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      // Keep the original if the round trip did not actually help
+      if (!blob || blob.size >= file.size) {
+        resolve(file);
+        return;
+      }
+      resolve(new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', {
+        type: 'image/jpeg',
+        lastModified: Date.now()
+      }));
+    }, 'image/jpeg', 0.85);
+  };
+
+  img.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    resolve(file);
+  };
+
+  img.src = objectUrl;
+});
+
+// Send the file straight to Cloudinary using a signature minted by /api/sign.
+// Uses XHR rather than fetch because only XHR reports upload progress.
+const uploadToCloudinary = (file, signature, onProgress) => new Promise((resolve, reject) => {
+  const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+  const form = new FormData();
+  form.append('file', file);
+  form.append('api_key', signature.apiKey);
+  form.append('timestamp', signature.timestamp);
+  form.append('signature', signature.signature);
+  form.append('folder', signature.folder);
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `https://api.cloudinary.com/v1_1/${signature.cloudName}/${resourceType}/upload`);
+
+  xhr.upload.addEventListener('progress', (e) => {
+    if (e.lengthComputable) onProgress(e.loaded / e.total);
+  });
+
+  xhr.onload = () => {
+    let data = {};
+    try {
+      data = JSON.parse(xhr.responseText);
+    } catch (err) {
+      reject(new Error('Medya sunucusundan beklenmeyen yanıt geldi.'));
+      return;
+    }
+    if (xhr.status >= 200 && xhr.status < 300 && data.secure_url) {
+      resolve(data);
+    } else {
+      reject(new Error((data.error && data.error.message) || 'Dosya medya sunucusuna yüklenemedi.'));
+    }
+  };
+
+  xhr.onerror = () => reject(new Error('Medya sunucusuna bağlanılamadı. İnternet bağlantını kontrol et.'));
+  xhr.ontimeout = () => reject(new Error('Yükleme zaman aşımına uğradı.'));
+
+  xhr.send(form);
+});
+
 // Handle upload submit action — called by the secret password overlay
 // This is exposed on window so the inline script in index.html can call it
 window._doActualUpload = async (pass) => {
-  if (!selectedFileBase64) {
+  if (!selectedFile) {
     throw new Error('Lütfen yüklenecek bir dosya seçin.');
   }
 
   const uploadMediaLocation = document.getElementById('upload-media-location');
   const uploadMediaDescription = document.getElementById('upload-media-description');
 
-  const payload = {
-    password: pass,
-    fileData: selectedFileBase64,
-    fileName: selectedFileNameRaw,
-    fileType: selectedFileTypeRaw,
-    title: uploadMediaTitle.value || selectedFileNameRaw,
-    location: uploadMediaLocation ? uploadMediaLocation.value : '',
-    description: uploadMediaDescription ? uploadMediaDescription.value : ''
-  };
-
   // Show progress in the background upload modal
   uploadProgressWrapper.style.display = 'block';
-  uploadProgressFill.style.width = '20%';
-  uploadStatusText.textContent = 'Doğrulanıyor ve yükleniyor...';
+  uploadProgressFill.style.width = '5%';
+  uploadStatusText.textContent = 'Doğrulanıyor...';
 
   try {
-    uploadProgressFill.style.width = '50%';
+    // 1. Ask the server for a signature. This also verifies the password before
+    //    a single byte of the file is sent anywhere.
+    const signResponse = await fetch('/api/sign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass })
+    });
+
+    const signData = await signResponse.json().catch(() => ({}));
+
+    if (signResponse.status === 401) {
+      uploadProgressWrapper.style.display = 'none';
+      throw new Error('Yanlış şifre!');
+    }
+    if (!signResponse.ok) {
+      uploadProgressWrapper.style.display = 'none';
+      throw new Error(signData.error || 'Yükleme hazırlanamadı.');
+    }
+
+    // 2. Shrink the photo, then send it straight to Cloudinary
+    uploadStatusText.textContent = 'Dosya hazırlanıyor...';
+    const fileToUpload = await compressImage(selectedFile);
+
+    uploadStatusText.textContent = 'Yükleniyor...';
+    const cloudinaryResult = await uploadToCloudinary(fileToUpload, signData, (ratio) => {
+      // Reserve the last 10% for writing the database row
+      uploadProgressFill.style.width = `${Math.round(10 + ratio * 80)}%`;
+      uploadStatusText.textContent = `Yükleniyor... %${Math.round(ratio * 100)}`;
+    });
+
+    // 3. Record only the resulting URL on the server
+    uploadProgressFill.style.width = '92%';
+    uploadStatusText.textContent = 'Galeriye kaydediliyor...';
+
+    const payload = {
+      password: pass,
+      secureUrl: cloudinaryResult.secure_url,
+      publicId: cloudinaryResult.public_id,
+      fileName: selectedFileNameRaw,
+      fileType: selectedFileTypeRaw,
+      title: uploadMediaTitle.value || selectedFileNameRaw,
+      location: uploadMediaLocation ? uploadMediaLocation.value : '',
+      description: uploadMediaDescription ? uploadMediaDescription.value : ''
+    };
+
     const response = await fetch('/api/upload', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

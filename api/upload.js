@@ -1,14 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configure body size limit for base64 uploads (Vercel allows up to 4.5MB payload on free tier serverless functions)
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '4.5mb'
-    }
-  }
-};
+// Vercel caps a function's request body at 4.5MB and that cap is not configurable
+// from here, so large files never reach this endpoint. The browser signs with
+// /api/sign and sends the file straight to Cloudinary, then posts only the
+// resulting URL here. The legacy base64 path is kept for small files.
 
 export default async function handler(req, res) {
   // CORS Headers
@@ -40,48 +36,66 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { password, fileData, fileName, fileType, title, location, description } = req.body;
+    const {
+      password, fileData, fileName, fileType, title, location, description,
+      // Set when the browser already uploaded straight to Cloudinary
+      secureUrl, publicId: uploadedPublicId
+    } = req.body;
 
     if (password !== uploadPassword) {
       res.status(401).json({ error: 'Yanlış şifre! Yükleme yetkiniz yok.' });
       return;
     }
 
-    if (!fileData || !fileName || !fileType) {
+    const isDirectUpload = Boolean(secureUrl && uploadedPublicId);
+
+    if (!isDirectUpload && (!fileData || !fileName || !fileType)) {
       res.status(400).json({ error: 'Geçersiz dosya verisi.' });
       return;
     }
 
-    // Configure Cloudinary
-    cloudinary.config({
-      cloud_name: cloudName,
-      api_key: apiKey,
-      api_secret: apiSecret
-    });
+    let mediaUrl;
+    let publicId;
 
-    // Upload to Cloudinary
-    let result;
-    try {
-      result = await cloudinary.uploader.upload(fileData, {
-        resource_type: fileType.startsWith('video/') ? 'video' : 'image',
-        folder: 'adnan_walk',
-        quality: 'auto',
-        fetch_format: 'auto'
+    if (isDirectUpload) {
+      // Only accept URLs that actually live on this Cloudinary account, so this
+      // endpoint cannot be used to insert arbitrary links into the gallery.
+      if (!secureUrl.startsWith(`https://res.cloudinary.com/${cloudName}/`)) {
+        res.status(400).json({ error: 'Geçersiz medya adresi.' });
+        return;
+      }
+      mediaUrl = secureUrl;
+      publicId = uploadedPublicId;
+    } else {
+      cloudinary.config({
+        cloud_name: cloudName,
+        api_key: apiKey,
+        api_secret: apiSecret
       });
-    } catch (err) {
-      throw stageError('CLOUDINARY', err);
-    }
 
-    const mediaUrl = result.secure_url;
-    const publicId = result.public_id;
+      let result;
+      try {
+        result = await cloudinary.uploader.upload(fileData, {
+          resource_type: fileType.startsWith('video/') ? 'video' : 'image',
+          folder: 'adnan_walk',
+          quality: 'auto',
+          fetch_format: 'auto'
+        });
+      } catch (err) {
+        throw stageError('CLOUDINARY', err);
+      }
+
+      mediaUrl = result.secure_url;
+      publicId = result.public_id;
+    }
 
     // Save to Supabase
     const supabase = createClient(supabaseUrl, supabaseKey);
     const newMedia = {
       id: publicId,
       url: mediaUrl,
-      title: title || fileName,
-      type: fileType.startsWith('video/') ? 'video' : 'image',
+      title: title || fileName || 'İsimsiz',
+      type: (fileType || '').startsWith('video/') ? 'video' : 'image',
       location: location || '',
       description: description || '',
       timestamp: new Date().toISOString()

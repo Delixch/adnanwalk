@@ -1432,7 +1432,7 @@ header {
 
 .gallery-empty-state {
   grid-column: 1 / -1;
-  display: flex !important;
+  display: flex;
   justify-content: center;
   align-items: center;
   padding: 4rem 2rem;
@@ -1441,6 +1441,14 @@ header {
   border: 1px dashed rgba(255, 255, 255, 0.05);
   color: var(--text-muted);
   font-size: 0.9rem !important;
+}
+
+/* Hiding is driven by a class, not an inline style, so no display rule anywhere
+   in this file can outrank it. This placeholder used to be stuck on screen
+   behind real media because a display:flex !important won against the inline
+   style the render code was setting. */
+.gallery-empty-state.is-hidden {
+  display: none !important;
 }
 
 .media-card {

@@ -101,6 +101,48 @@ export default defineConfig(({ mode }) => {
               return;
             }
 
+            // 1B. POST /api/sign - Issue a Cloudinary signature for direct browser upload
+            if (req.url === '/api/sign' && req.method === 'POST') {
+              let body = '';
+              req.on('data', chunk => { body += chunk; });
+              req.on('end', () => {
+                res.setHeader('Content-Type', 'application/json');
+                try {
+                  const { password } = JSON.parse(body);
+
+                  if (password !== UPLOAD_PASSWORD) {
+                    res.statusCode = 401;
+                    res.end(JSON.stringify({ error: "Yanlış şifre! Yükleme yetkiniz yok." }));
+                    return;
+                  }
+
+                  if (!isCloudinaryConfigured) {
+                    res.statusCode = 500;
+                    res.end(JSON.stringify({ error: "Cloudinary yapılandırılmamış, doğrudan yükleme kullanılamaz." }));
+                    return;
+                  }
+
+                  const timestamp = Math.round(Date.now() / 1000);
+                  const paramsToSign = { folder: 'adnan_walk', timestamp };
+                  const signature = cloudinary.utils.api_sign_request(paramsToSign, env.CLOUDINARY_API_SECRET);
+
+                  res.statusCode = 200;
+                  res.end(JSON.stringify({
+                    cloudName: env.CLOUDINARY_CLOUD_NAME,
+                    apiKey: env.CLOUDINARY_API_KEY,
+                    timestamp,
+                    folder: paramsToSign.folder,
+                    signature
+                  }));
+                } catch (err) {
+                  console.error("[API] Sign failed:", err);
+                  res.statusCode = 500;
+                  res.end(JSON.stringify({ error: "İmza oluşturulamadı." }));
+                }
+              });
+              return;
+            }
+
             // 2. POST /api/upload - Secured Cloudinary/local upload
             if (req.url === '/api/upload' && req.method === 'POST') {
               let body = '';
@@ -110,7 +152,10 @@ export default defineConfig(({ mode }) => {
               req.on('end', async () => {
                 res.setHeader('Content-Type', 'application/json');
                 try {
-                  const { password, fileData, fileName, fileType, title, location, description } = JSON.parse(body);
+                  const {
+                    password, fileData, fileName, fileType, title, location, description,
+                    secureUrl, publicId: uploadedPublicId
+                  } = JSON.parse(body);
 
                   // Check password securely
                   if (password !== UPLOAD_PASSWORD) {
@@ -119,7 +164,11 @@ export default defineConfig(({ mode }) => {
                     return;
                   }
 
-                  if (!fileData || !fileName || !fileType) {
+                  // The browser may have uploaded straight to Cloudinary already,
+                  // in which case only the resulting URL arrives here.
+                  const isDirectUpload = Boolean(secureUrl && uploadedPublicId);
+
+                  if (!isDirectUpload && (!fileData || !fileName || !fileType)) {
                     res.statusCode = 400;
                     res.end(JSON.stringify({ error: "Geçersiz dosya verisi." }));
                     return;
@@ -129,7 +178,11 @@ export default defineConfig(({ mode }) => {
                   let publicId = '';
 
                   // Handle file upload
-                  if (isCloudinaryConfigured) {
+                  if (isDirectUpload) {
+                    mediaUrl = secureUrl;
+                    publicId = uploadedPublicId;
+                    console.log("[API] Direct browser upload recorded:", mediaUrl);
+                  } else if (isCloudinaryConfigured) {
                     // Upload to Cloudinary
                     const result = await cloudinary.uploader.upload(fileData, {
                       resource_type: fileType.startsWith('video/') ? 'video' : 'image',
@@ -164,8 +217,8 @@ export default defineConfig(({ mode }) => {
                   const newMedia = {
                     id: publicId,
                     url: mediaUrl,
-                    title: title || fileName,
-                    type: fileType.startsWith('video/') ? 'video' : 'image',
+                    title: title || fileName || "İsimsiz",
+                    type: (fileType || '').startsWith('video/') ? 'video' : 'image',
                     location: location || "",
                     description: description || "",
                     timestamp: new Date().toISOString()
