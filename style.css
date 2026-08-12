@@ -142,24 +142,24 @@ header {
 
 /* Fütüristik 3D Eğik Bilgi Paneli (HTML/CSS tabanlı, 100% Sorunsuz) */
 .skills-content {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  width: 100% !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  gap: 3.5rem !important;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 3.5rem;
 }
 
 .skills-content .text-side.right-aligned {
-  flex: 0 0 54% !important;
-  max-width: 580px !important;
-  margin: 0 !important;
+  flex: 0 0 54%;
+  max-width: 580px;
+  margin: 0;
 }
 
 .skills-detail-panel {
-  flex: 0 0 42% !important;
+  flex: 0 0 42%;
   max-width: 440px;
   min-height: 520px;
   padding: 2.2rem;
@@ -490,25 +490,30 @@ header {
 }
 
 .projects-content {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  width: 100% !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  gap: 3.5rem !important;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 1rem;
 }
 
 .projects-content .text-side.right-aligned {
-  flex: 0 0 54% !important;
-  max-width: 580px !important;
-  margin: 0 !important;
+  flex: 0 0 54%;
+  max-width: 580px;
+  margin: 0;
+}
+
+.projects-content > .skills-detail-panel {
+  flex: 0 0 44%;
+  max-width: 470px;
 }
 
 #projects-detail-panel {
   position: relative;
-  transform: perspective(1200px) rotateY(24deg) rotateX(4deg) !important;
+  transform: perspective(1200px) rotateY(24deg) rotateX(4deg);
 }
 
 .text-side {
@@ -659,9 +664,9 @@ header {
 }
 
 .skill-card.active {
-  background: rgba(249, 115, 22, 0.1) !important;
-  border-color: rgba(249, 115, 22, 0.6) !important;
-  box-shadow: 0 0 25px rgba(249, 115, 22, 0.2) !important;
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.6);
+  box-shadow: 0 0 25px rgba(249, 115, 22, 0.2);
 }
 
 .skill-card:hover {
@@ -1339,20 +1344,20 @@ header {
 
 @media (max-width: 768px) {
   .hover-gallery-3d {
-    height: 55vw;
-    min-height: 260px;
+    height: 55vw !important;
+    min-height: 260px !important;
     max-height: 400px;
     border-radius: 14px;
     perspective: 1500px;
   }
   .hg3d-strip.neighbor-l {
-    transform: perspective(1500px) rotateY(20deg) translateZ(-40px);
+    transform: perspective(1500px) rotateY(20deg) translateZ(-40px) !important;
   }
   .hg3d-strip.neighbor-r {
-    transform: perspective(1500px) rotateY(-20deg) translateZ(-40px);
+    transform: perspective(1500px) rotateY(-20deg) translateZ(-40px) !important;
   }
   .hg3d-strip.active {
-    flex: 55vw;
+    flex: 55vw !important;
   }
   .hg3d-strip-info h4 { font-size: 0.9rem; }
   .hg3d-nav { width: 34px; height: 34px; font-size: 0.9rem; }
@@ -1361,7 +1366,7 @@ header {
 
 .gallery-empty-state {
   grid-column: 1 / -1;
-  display: flex;
+  display: flex !important;
   justify-content: center;
   align-items: center;
   padding: 4rem 2rem;
@@ -1369,11 +1374,11 @@ header {
   background: rgba(255, 255, 255, 0.01);
   border: 1px dashed rgba(255, 255, 255, 0.05);
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.9rem !important;
 }
 
 .media-card {
-  position: relative;
+  position: relative !important;
   border-radius: 12px;
   overflow: hidden;
   background: rgba(6, 2, 13, 0.6);
@@ -1384,33 +1389,33 @@ header {
 }
 
 .media-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-5px) !important;
   border-color: rgba(241, 48, 36, 0.3);
   box-shadow: 0 10px 25px rgba(241, 48, 36, 0.05);
 }
 
 .media-thumbnail {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
   transition: transform 0.6s ease;
 }
 
 .media-card:hover .media-thumbnail {
-  transform: scale(1.05);
+  transform: scale(1.05) !important;
 }
 
 .media-video-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 50px !important;
+  height: 50px !important;
   background: rgba(6, 2, 13, 0.85);
   border: 1px solid rgba(241, 48, 36, 0.4);
   border-radius: 50%;
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 15px rgba(241, 48, 36, 0.15);
@@ -1419,9 +1424,9 @@ header {
 
 .media-video-overlay::after {
   content: "";
-  display: block;
-  width: 0;
-  height: 0;
+  display: block !important;
+  width: 0 !important;
+  height: 0 !important;
   border-style: solid;
   border-width: 8px 0 8px 14px;
   border-color: transparent transparent transparent #fff;
@@ -1431,33 +1436,33 @@ header {
 .media-card:hover .media-video-overlay {
   background: var(--primary-color);
   border-color: var(--primary-color);
-  transform: translate(-50%, -50%) scale(1.1);
+  transform: translate(-50%, -50%) scale(1.1) !important;
   box-shadow: 0 0 20px rgba(241, 48, 36, 0.4);
 }
 
 .media-info-bar {
-  position: absolute;
+  position: absolute !important;
   bottom: 0;
-  left: 0;
-  width: 100%;
+  left: 0 !important;
+  width: 100% !important;
   background: linear-gradient(180deg, transparent, rgba(6, 2, 13, 0.95));
   padding: 1.5rem 1rem 0.8rem 1rem;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
-  gap: 0.2rem;
-  opacity: 0;
-  transform: translateY(10px);
+  gap: 0.2rem !important;
+  opacity: 0 !important;
+  transform: translateY(10px) !important;
   transition: all 0.3s ease;
 }
 
 .media-card:hover .media-info-bar {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 1 !important;
+  transform: translateY(0) !important;
 }
 
 .media-card-title {
   color: var(--text-color);
-  font-size: 0.85rem;
+  font-size: 0.85rem !important;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -1466,13 +1471,13 @@ header {
 
 .media-card-date {
   color: var(--text-muted);
-  font-size: 0.7rem;
+  font-size: 0.7rem !important;
 }
 
 /* File select styled button */
 .file-label:hover {
-  background: rgba(241, 48, 36, 0.05) !important;
-  border-color: var(--primary-color) !important;
+  background: rgba(241, 48, 36, 0.05);
+  border-color: var(--primary-color);
 }
 
 .file-name-text {
@@ -1482,48 +1487,48 @@ header {
 
 /* Tam ekran medya oynatıcı (Lightbox) */
 .lightbox-content-wrapper img, .lightbox-content-wrapper video {
-  max-width: 100%;
+  max-width: 100% !important;
   max-height: 70vh;
   object-fit: contain;
-  display: block;
+  display: block !important;
 }
 
 /* Media Query overrides */
 @media (max-width: 768px) {
   .gallery-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.2rem;
+    gap: 1.2rem !important;
   }
 }
 
 /* Admin delete button on media cards */
 .media-delete-btn {
-  position: absolute;
-  top: 10px;
+  position: absolute !important;
+  top: 10px !important;
   right: 10px;
-  width: 32px;
-  height: 32px;
+  width: 32px !important;
+  height: 32px !important;
   background: rgba(241, 48, 36, 0.9);
   border: 1px solid var(--primary-color);
   border-radius: 50%;
-  display: none; /* Hidden by default, shown when window.adnanIsAdmin is true */
+  display: none !important; /* Hidden by default, shown when window.adnanIsAdmin is true */
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
+  z-index: 10 !important;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   box-shadow: 0 4px 10px rgba(0,0,0,0.6);
 }
 
 .media-delete-btn:hover {
   background: #ff0000;
-  transform: scale(1.15);
+  transform: scale(1.15) !important;
   box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
 }
 
 .media-delete-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 14px !important;
+  height: 14px !important;
   fill: #fff;
 }
 
@@ -1532,40 +1537,40 @@ header {
   margin-top: 1rem;
   padding: 0.6rem 1.8rem;
   font-family: var(--font-base);
-  font-size: 0.85rem;
+  font-size: 0.85rem !important;
   font-weight: 500;
   color: #fff;
   background: rgba(241, 48, 36, 0.2);
   border: 1px solid var(--primary-color);
   border-radius: 8px;
   cursor: pointer;
-  display: none;
+  display: none !important;
   transition: all 0.3s ease;
 }
 
 .lightbox-delete-btn:hover {
   background: var(--primary-color);
   box-shadow: 0 0 15px rgba(241, 48, 36, 0.3);
-  transform: translateY(-2px);
+  transform: translateY(-2px) !important;
 }
 
 /* === PREMIUM MOBILE RESPONSIVENESS OVERRIDES === */
 @media (max-width: 768px) {
   /* 1. Centered and Clean Grid Sections */
   .section-content {
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 60px 1.2rem 100px 1.2rem !important; /* give space for the bottom dock */
+    justify-content: center;
+    align-items: center;
+    padding: 60px 1.2rem 100px 1.2rem; /* give space for the bottom dock */
     min-height: 100vh !important;
   }
 
   /* Force column stacking on skills and projects grids on mobile */
   .skills-content, .projects-content {
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
     gap: 1.5rem !important;
-    padding-top: 50px !important;
+    padding-top: 50px;
     width: 100% !important;
   }
 
@@ -1574,34 +1579,41 @@ header {
     width: 100% !important;
     max-width: 100% !important;
     min-height: auto !important;
-    padding: 1.4rem 1.2rem !important;
+    padding: 1.4rem 1.2rem;
     /* Sideways 3D perspective rotation tilt on mobile inside the accordion! */
     transform: perspective(1000px) rotateY(-11deg) rotateX(2deg) scale(0.96) !important;
-    transform-style: preserve-3d !important;
+    transform-style: preserve-3d;
     margin: 1.2rem auto 0.5rem auto !important;
-    border: 1px solid rgba(241, 48, 36, 0.4) !important;
-    border-radius: 12px !important;
-    display: none; /* Hidden by default, toggled active by JS */
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(241, 48, 36, 0.15) !important;
+    border: 1px solid rgba(241, 48, 36, 0.4);
+    border-radius: 12px;
+    display: none !important; /* Hidden by default, toggled active by JS */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(241, 48, 36, 0.15);
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
-  /* Projects background holographic panel on mobile */
+  /* Projects media stage on mobile: sits in flow directly under the swipe deck */
   #projects-detail-panel {
     display: flex !important; /* Force show! */
-    position: absolute !important;
-    left: -20px !important;
-    top: 0; /* No !important here so GSAP top animation overrides this */
-    width: 300px !important;
-    height: 480px !important;
+    position: relative !important;
+    order: 2;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    /* TikTok/Reels vertical frame so the portrait video is not cropped */
+    height: auto !important;
+    aspect-ratio: 9 / 16;
+    max-height: 72vh;
     min-height: auto !important;
-    z-index: 1 !important; /* Behind the cards */
-    opacity: 0.45 !important; /* Semi-transparent holographic look */
-    pointer-events: none !important; /* Click through it! */
-    transform: perspective(1000px) rotateY(25deg) rotateX(4deg) scale(0.85) !important;
-    transform-style: preserve-3d !important;
-    margin: 0 !important;
-    border: 1px solid rgba(241, 48, 36, 0.3) !important;
+    z-index: 0 !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    margin: 1rem 0 0 0 !important;
+    padding: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(241, 48, 36, 0.35);
+    border-radius: 16px;
   }
 
   #projects-detail-panel button {
@@ -1616,15 +1628,18 @@ header {
   .text-side {
     max-width: 100% !important;
     width: 100% !important;
-    align-self: center !important;
-    text-align: center !important;
-    padding: 1.5rem 1.2rem !important;
-    background: rgba(10, 5, 20, 0.4) !important; /* Slightly transparent to let background hologram show through */
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    align-self: center;
+    text-align: center;
+    padding: 1.5rem 1.2rem;
+    /* Must sit above the holographic panel, which is absolutely positioned in the same stacking context */
+    position: relative !important;
+    z-index: 2 !important;
+    background: rgba(10, 5, 20, 0.72); /* Slightly transparent to let background hologram show through */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
   
   .skills-content .text-side.right-aligned,
@@ -1632,28 +1647,59 @@ header {
     flex: 0 0 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
-    text-align: center !important;
+    text-align: center;
+  }
+
+  .projects-content .text-side.right-aligned {
+    order: 1;
   }
   
   .text-side.right-aligned {
-    text-align: center !important;
+    text-align: center;
   }
 
+  /* Horizontal scroll-snap deck: one card at a time, swipe to change the media stage */
   .project-list {
-    width: 100% !important;
+    width: auto !important;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.9rem !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    /* Bleed past the .text-side padding so cards run edge to edge */
+    margin: 0.5rem -1.2rem 0 -1.2rem !important;
+    /* Side padding equal to the free space, so the first and last card can centre */
+    padding: 0.2rem 4% 0.6rem 4%;
+    scrollbar-width: none;
   }
-  
+
+  .project-list::-webkit-scrollbar {
+    display: none !important;
+  }
+
   .project-item {
-    padding: 1.2rem !important;
+    padding: 1.2rem;
     gap: 1rem !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
+    flex: 0 0 92% !important;
+    flex-direction: column;
+    align-items: stretch;
     position: relative !important;
+    scroll-snap-align: center;
+    text-align: left;
+  }
+
+  /* The desktop translateX highlight would fight scroll-snap alignment */
+  .project-item:hover, .project-item.active {
+    transform: none !important;
+    background: rgba(241, 48, 36, 0.08);
+    border-color: rgba(241, 48, 36, 0.45);
   }
 
   .project-link {
-    align-self: flex-start !important;
-    margin-top: 0.2rem !important;
+    align-self: flex-start;
+    margin-top: 0.2rem;
     opacity: 1 !important;
     transform: none !important;
     pointer-events: auto !important;
@@ -1666,35 +1712,35 @@ header {
   .project-item p {
     font-size: 0.75rem !important;
     line-height: 1.35 !important;
-    margin-bottom: 0 !important;
+    margin-bottom: 0;
   }
 
   /* 2. Glassmorphic Floating Bottom Navigation Dock */
   .floating-nav {
     position: fixed !important;
-    bottom: 20px !important;
+    bottom: 20px;
     left: 20px !important;
-    right: 20px !important;
+    right: 20px;
     top: auto !important;
     transform: none !important;
-    flex-direction: row !important;
-    justify-content: space-around !important;
-    align-items: center !important;
-    border-radius: 20px !important;
-    padding: 0.5rem 0.4rem !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    background: rgba(8, 4, 15, 0.72) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 20px;
+    padding: 0.5rem 0.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(8, 4, 15, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 
                 inset 0 1px 0 rgba(255, 255, 255, 0.12),
-                0 0 15px rgba(241, 48, 36, 0.12) !important;
+                0 0 15px rgba(241, 48, 36, 0.12);
     z-index: 999 !important;
   }
   
   .floating-nav-item {
     margin: 0 !important;
-    padding: 6px 10px !important;
+    padding: 6px 10px;
   }
   
   .floating-nav-item::after {
@@ -1710,13 +1756,13 @@ header {
   .hero-content h1 {
     font-size: 2.3rem !important;
     line-height: 1.2 !important;
-    letter-spacing: -0.02rem !important;
+    letter-spacing: -0.02rem;
   }
 
   .text-side h2 {
     font-size: 1.8rem !important;
     line-height: 1.25 !important;
-    margin-bottom: 0.8rem !important;
+    margin-bottom: 0.8rem;
   }
   
   p, .subtitle {
@@ -1726,60 +1772,60 @@ header {
 
   /* 4. Skills and Project Grid layouts */
   .skills-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     gap: 0.8rem !important;
-    margin-top: 1rem !important;
+    margin-top: 1rem;
   }
   
   .skill-card {
-    padding: 1rem !important;
+    padding: 1rem;
   }
   
   .skill-card h4 {
     font-size: 0.95rem !important;
-    margin-bottom: 0.2rem !important;
+    margin-bottom: 0.2rem;
   }
 
   /* 5. Compact Modal Padding & Header Controls */
   .modal-content {
     width: 100% !important;
-    padding: 2.5rem 1.2rem !important;
+    padding: 2.5rem 1.2rem;
   }
   
   .close-btn {
     top: 1rem !important;
-    right: 1rem !important;
+    right: 1rem;
     font-size: 2rem !important;
   }
 
   .gallery-actions {
-    flex-direction: column !important;
-    align-items: stretch !important;
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.6rem !important;
   }
   
   .upload-trigger-btn {
     width: 100% !important;
-    justify-content: center !important;
+    justify-content: center;
   }
   
   /* 6. Sound & Interactive Buttons layout overrides */
   .sound-btn {
-    bottom: 95px !important; /* Position it right above the navigation dock */
-    right: 20px !important;
+    bottom: 95px; /* Position it right above the navigation dock */
+    right: 20px;
     width: 44px !important;
     height: 44px !important;
   }
 
   /* 7. Gallery grid aspect ratios and spacing */
   .gallery-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 0.8rem !important;
-    padding: 0.5rem 0 !important;
+    padding: 0.5rem 0;
   }
   
   .media-card {
-    border-radius: 10px !important;
+    border-radius: 10px;
   }
   
   .media-thumbnail {
@@ -1787,7 +1833,7 @@ header {
   }
   
   .media-info-bar {
-    padding: 0.5rem !important;
+    padding: 0.5rem;
   }
   
   .media-card-title {
@@ -1797,25 +1843,25 @@ header {
   /* 8. Lightbox full viewport fit on portrait screens */
   .lightbox-content-wrapper {
     max-width: 95vw !important;
-    max-height: 85vh !important;
+    max-height: 85vh;
   }
   
   #lightbox-media-container {
-    max-height: 50vh !important;
+    max-height: 50vh;
   }
   
   #lightbox-media-container img, #lightbox-media-container video {
-    max-height: 50vh !important;
+    max-height: 50vh;
   }
   
   #lightbox-title {
     font-size: 1.1rem !important;
-    margin-top: 0.8rem !important;
+    margin-top: 0.8rem;
   }
   
   #lightbox-desc {
     font-size: 0.75rem !important;
-    padding: 0 0.5rem !important;
+    padding: 0 0.5rem;
   }
 }
 
@@ -1878,25 +1924,57 @@ header {
 }
 
 .ai-rain-el {
-  position: absolute;
+  position: absolute !important;
   writing-mode: vertical-rl;
   text-orientation: upright;
-  font-size: 0.85rem;
+  font-size: 0.85rem !important;
   letter-spacing: 0.4rem;
   animation: aiRainDrop 4.8s infinite linear;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
   font-weight: 700;
 }
 
 .ai-marquee-el {
-  position: absolute;
+  position: absolute !important;
   white-space: nowrap;
-  font-size: 0.95rem;
+  font-size: 0.95rem !important;
   font-weight: 700;
   letter-spacing: 0.08rem;
-  pointer-events: none;
+  pointer-events: none !important;
   text-shadow: 0 0 8px currentColor;
 }
 
 
+
+/* ---------------------------------------------------------------------------
+   Reduced motion
+   The visual design stays intact: colours, glows, borders and the 3D scene are
+   untouched. What is removed is involuntary movement and long distance travel,
+   which is what triggers vestibular symptoms. Opacity fades are kept but made
+   near-instant so nothing simply fails to appear.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Sections must not stay stuck 50px down if their transition is neutralised */
+  .section-content {
+    transform: none !important;
+  }
+
+  .project-item:hover,
+  .project-item.active {
+    transform: none !important;
+  }
+
+  .project-list {
+    scroll-behavior: auto !important;
+  }
+}

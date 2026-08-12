@@ -49,6 +49,7 @@ const showToast = (message, type = 'info', duration = 4000) => {
 // --- AUDIO ENGINE (Procedural Web Audio API) ---
 
 let audioCtx = null;
+let masterGain = null;
 let ambientOsc1 = null;
 let ambientOsc2 = null;
 let ambientFilter = null;
@@ -58,6 +59,12 @@ let noiseFilter = null;
 let noiseGain = null;
 
 let isSoundEnabled = false;
+
+// Single source of truth for the phone tier: it lowers renderer cost, thins the
+// constellation, and lifts the drone an octave since phone speakers cannot
+// reproduce 65Hz. Read once at load; a resize past the breakpoint is not worth
+// rebuilding the whole scene for.
+const isMobileDevice = window.innerWidth < 768;
 
 // Scroll velocity tracking variables
 let lastScrollY = window.scrollY;
@@ -76,6 +83,12 @@ const initAudio = () => {
   // Create audio context
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+  // Master bus: every voice routes through here so level, fades and ducking
+  // are controlled from a single node instead of hitting the destination raw.
+  masterGain = audioCtx.createGain();
+  masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+  masterGain.connect(audioCtx.destination);
+
   // 1. Ambient Space Drone (Breathing spaceship engine hum)
   ambientFilter = audioCtx.createBiquadFilter();
   ambientFilter.type = 'lowpass';
@@ -85,15 +98,15 @@ const initAudio = () => {
   ambientGain = audioCtx.createGain();
   ambientGain.gain.setValueAtTime(0.06, audioCtx.currentTime);
 
-  // Low frequency oscillator 1 (C2 - 65.4 Hz)
+  // Low frequency oscillator 1 (C2 - 65.4 Hz, C3 on mobile)
   ambientOsc1 = audioCtx.createOscillator();
   ambientOsc1.type = 'sawtooth';
-  ambientOsc1.frequency.setValueAtTime(65.4, audioCtx.currentTime);
+  ambientOsc1.frequency.setValueAtTime(isMobileDevice ? 130.8 : 65.4, audioCtx.currentTime);
 
   // Low frequency oscillator 2 detuned (G2 - 98.0 Hz, mapped lower to 97.5Hz)
   ambientOsc2 = audioCtx.createOscillator();
   ambientOsc2.type = 'triangle';
-  ambientOsc2.frequency.setValueAtTime(97.5, audioCtx.currentTime);
+  ambientOsc2.frequency.setValueAtTime(isMobileDevice ? 195 : 97.5, audioCtx.currentTime);
 
   // Slow LFO to modulate filter cutoff frequency (creates dynamic depth changes)
   const lfo = audioCtx.createOscillator();
@@ -107,7 +120,7 @@ const initAudio = () => {
   ambientOsc1.connect(ambientFilter);
   ambientOsc2.connect(ambientFilter);
   ambientFilter.connect(ambientGain);
-  ambientGain.connect(audioCtx.destination);
+  ambientGain.connect(masterGain);
 
   // Start hum nodes
   ambientOsc1.start();
@@ -136,29 +149,47 @@ const initAudio = () => {
 
   noiseSource.connect(noiseFilter);
   noiseFilter.connect(noiseGain);
-  noiseGain.connect(audioCtx.destination);
-  
+  noiseGain.connect(masterGain);
+
   noiseSource.start();
 };
+
+// Fade the master bus instead of hard suspending the context, so toggling
+// sound on and off does not produce a click.
+const setMasterLevel = (value, seconds = 0.35) => {
+  if (!audioCtx || !masterGain) return;
+  masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  masterGain.gain.setValueAtTime(masterGain.gain.value, audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(value, audioCtx.currentTime + seconds);
+};
+
+// Sweeping the cursor across a list fires mouseenter far faster than the 80ms
+// chime decays, and the overlapping copies sum into a harsh buzz. Rate limit it.
+let lastHoverSoundAt = 0;
+const HOVER_SOUND_MIN_GAP = 120;
 
 const playHoverSound = () => {
   try {
     if (!isSoundEnabled || !audioCtx) return;
-    
+
+    const now = performance.now();
+    if (now - lastHoverSoundAt < HOVER_SOUND_MIN_GAP) return;
+    lastHoverSoundAt = now;
+
     // Sine chime click
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
-    
+
     osc.type = 'sine';
     osc.frequency.setValueAtTime(950, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(350, audioCtx.currentTime + 0.08);
-    
+
     gainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-    
+
     osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    
+    gainNode.connect(masterGain);
+
     osc.start();
     osc.stop(audioCtx.currentTime + 0.08);
   } catch (e) {
@@ -176,13 +207,16 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       if (isSoundEnabled) {
-        audioCtx.suspend();
         isSoundEnabled = false;
+        setMasterLevel(0);
+        // Suspend only once the fade has finished, otherwise it clicks
+        setTimeout(() => { if (!isSoundEnabled) audioCtx.suspend(); }, 400);
         soundToggleBtn.classList.remove('active');
         soundToggleBtn.querySelector('.sound-icon').textContent = '🔈';
         soundToggleBtn.querySelector('.sound-text').textContent = 'SES: KAPALI';
       } else {
         audioCtx.resume();
+        setMasterLevel(1);
         isSoundEnabled = true;
         soundToggleBtn.classList.add('active');
         soundToggleBtn.querySelector('.sound-icon').textContent = '🔊';
@@ -247,11 +281,15 @@ updateCameraFOV(); // Run once initially
 // Renderer
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
-  antialias: true,
-  alpha: false // solid background for better fog blending
+  // MSAA and a 2x buffer are the two most expensive knobs on a phone GPU, and the
+  // scene is dark and fog-heavy enough that neither is visible there.
+  antialias: !isMobileDevice,
+  alpha: false, // solid background for better fog blending
+  powerPreference: 'high-performance'
 });
+const maxPixelRatio = isMobileDevice ? 1.5 : 2;
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
 renderer.setClearColor(scene.fog.color); // match background color to fog
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
@@ -261,8 +299,8 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   updateCameraFOV();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+
   // Restore/adjust skills details panel placement on desktop/mobile layout transition
   const activeCard = document.querySelector('.skill-card.active');
   const skillsPanel = document.getElementById('skills-detail-panel');
@@ -316,7 +354,8 @@ scene.add(cameraLight);
 // --- 3. CREATING THE 3D SCENE OBJECTS ---
 
 // A. 3D Constellation Network (Replaces starfield with interactive grid)
-const constellationNodeCount = 120;
+// The link pass is O(n^2) per frame, so halving the count on phones cuts it by four.
+const constellationNodeCount = isMobileDevice ? 60 : 120;
 const constellationNodes = [];
 const constellationGeometry = new THREE.BufferGeometry();
 const constellationPositions = new Float32Array(constellationNodeCount * 3);
@@ -464,7 +503,9 @@ const portalRing = new THREE.Mesh(ringGeo, ringMat);
 portalGroup.add(portalRing);
 
 // Portal Swirl Wormhole (Rotating geometric wireframe mesh)
-const swirlGeo = new THREE.TorusKnotGeometry(4.8, 0.2, 180, 24, 3, 4);
+// 180x24 segments was ~8.6k triangles for a single thin knot; 120x16 is
+// indistinguishable at this scale and costs a third of that.
+const swirlGeo = new THREE.TorusKnotGeometry(4.8, 0.2, isMobileDevice ? 80 : 120, isMobileDevice ? 12 : 16, 3, 4);
 const swirlMat = new THREE.MeshPhysicalMaterial({
   color: 0xf13024, // Crimson Swirl
   emissive: 0x3d0407,
@@ -837,7 +878,7 @@ const playRevealSound = () => {
     
     osc.connect(filter);
     filter.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+    gainNode.connect(masterGain);
     
     osc.start();
     osc.stop(audioCtx.currentTime + 0.35);
@@ -866,12 +907,12 @@ htmlProjItems.forEach(item => {
       }
     }
 
-    // Scramble effect & sound on link text
+    // Scramble effect on link text. The reveal swoosh is deliberately not played
+    // here: playHoverSound above already fires, and stacking both muddies the cue.
     const linkTextEl = item.querySelector('.link-text');
     if (linkTextEl) {
       scrambleText(linkTextEl, "İNCELE");
     }
-    playRevealSound();
   });
 
   item.addEventListener('mouseleave', () => {
@@ -956,7 +997,7 @@ const playModalOpenSound = () => {
       gainNode.gain.setValueAtTime(0.015, time);
       gainNode.gain.exponentialRampToValueAtTime(0.001, time + dur);
       osc.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
+      gainNode.connect(masterGain);
       osc.start(time);
       osc.stop(time + dur);
     };
@@ -979,7 +1020,7 @@ const playModalCloseSound = () => {
     gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
     osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+    gainNode.connect(masterGain);
     osc.start();
     osc.stop(audioCtx.currentTime + 0.3);
   } catch (e) {
@@ -2235,17 +2276,32 @@ const handleProjectsPanelShift = (item, idx) => {
   htmlProjItems.forEach(c => c.classList.remove('active'));
   item.classList.add('active');
 
-  // Smoothly slide the panel vertically to match the active card's position
+  // On desktop, smoothly slide the panel vertically to match the active card.
+  // The panel is position:relative there and also carries a CSS 3D transform, so `top`
+  // is not an absolute coordinate: measure the rendered offset and move by the delta.
   const parentEl = originalProjectsPanelParent || projectsPanel.parentNode;
-  if (parentEl) {
+  if (window.innerWidth < 768) {
+    // Mobile uses a horizontal swipe deck with the panel as a normal in-flow media
+    // stage below it, so no vertical repositioning is needed. Clear any desktop offset.
+    gsap.killTweensOf(projectsPanel);
+    projectsPanel.style.top = '';
+  } else if (parentEl) {
     const parentRect = parentEl.getBoundingClientRect();
+    const panelRect = projectsPanel.getBoundingClientRect();
     const cardRect = item.getBoundingClientRect();
-    
-    // Calculate relative vertical top offset
-    const targetY = cardRect.top - parentRect.top;
-    
+    const currentTop = parseFloat(gsap.getProperty(projectsPanel, 'top')) || 0;
+
+    // Line up the centers so the tall panel brackets the card.
+    const delta = (cardRect.top + cardRect.height / 2) - (panelRect.top + panelRect.height / 2);
+
+    // Keep the panel inside the section column so it never drops below the content.
+    const minTop = currentTop + (parentRect.top - panelRect.top);
+    const maxTop = currentTop + (parentRect.bottom - panelRect.bottom);
+    let targetTop = currentTop + delta;
+    targetTop = maxTop < minTop ? minTop : Math.min(Math.max(targetTop, minTop), maxTop);
+
     gsap.to(projectsPanel, {
-      top: `${targetY}px`,
+      top: `${targetTop}px`,
       duration: 0.75,
       ease: 'power2.out',
       overwrite: 'auto'
@@ -2296,6 +2352,46 @@ htmlProjItems.forEach(item => {
     handleProjectsPanelShift(item, idx);
   });
 });
+
+// --- Mobile horizontal swipe deck ---
+// Below 768px the project list becomes a scroll-snap carousel and the detail panel
+// sits underneath it as a media stage. Swiping to a card activates its media.
+const projectDeck = document.querySelector('.project-list');
+
+const activateCardNearestDeckCenter = () => {
+  if (!projectDeck || window.innerWidth >= 768) return;
+
+  const deckRect = projectDeck.getBoundingClientRect();
+  const deckCenter = deckRect.left + deckRect.width / 2;
+
+  let closest = null;
+  let closestDistance = Infinity;
+  htmlProjItems.forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const distance = Math.abs(rect.left + rect.width / 2 - deckCenter);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closest = card;
+    }
+  });
+
+  if (closest && !closest.classList.contains('active')) {
+    handleProjectsPanelShift(closest, parseInt(closest.getAttribute('data-index')));
+  }
+};
+
+if (projectDeck) {
+  let deckSettleTimer = null;
+  projectDeck.addEventListener('scroll', () => {
+    clearTimeout(deckSettleTimer);
+    deckSettleTimer = setTimeout(activateCardNearestDeckCenter, 110);
+  }, { passive: true });
+
+  // Prime the media stage with the first card so it is never blank on mobile
+  if (window.innerWidth < 768 && htmlProjItems.length) {
+    handleProjectsPanelShift(htmlProjItems[0], 0);
+  }
+}
 
 
 modalOverlay.addEventListener('click', closeProjectDetails);
@@ -2412,17 +2508,32 @@ const sections = document.querySelectorAll('.scroll-section');
 const navLinks = document.querySelectorAll('.floating-nav-item');
 
 sections.forEach((sec, idx) => {
+  // Content reveal. Sections taller than the viewport (the gallery on mobile) used to
+  // fade out at 'bottom center', while half of the section was still on screen.
+  // Hold the reveal until the section has almost completely scrolled past.
+  ScrollTrigger.create({
+    trigger: sec,
+    start: 'top 70%',
+    end: 'bottom 10%',
+    onToggle: (self) => {
+      if (self.isActive) {
+        sec.classList.add('visible');
+      } else {
+        sec.classList.remove('visible');
+      }
+    }
+  });
+
+  // Navigation highlight stays on the centre-crossing section so only one dock item
+  // is ever active, even when two reveal ranges overlap.
   ScrollTrigger.create({
     trigger: sec,
     start: 'top center',
     end: 'bottom center',
     onToggle: (self) => {
       if (self.isActive) {
-        sec.classList.add('visible');
         navLinks.forEach(link => link.classList.remove('active'));
         if (navLinks[idx]) navLinks[idx].classList.add('active');
-      } else {
-        sec.classList.remove('visible');
       }
     }
   });
@@ -2442,20 +2553,47 @@ const getMouse3D = (depth = 11) => {
   return new THREE.Vector3().copy(camPos).add(dir.multiplyScalar(depth));
 };
 
+// The link rebuild below is the heaviest CPU work in the loop. Node velocities are
+// small enough that recomputing it on every frame is invisible, so it runs on a
+// slower cadence than the render itself.
+let frameCounter = 0;
+const linkRebuildInterval = isMobileDevice ? 3 : 2;
+
+// Respect the OS "reduce motion" setting. The scene, lights and colours stay; what
+// stops is the involuntary movement that causes trouble for vestibular disorders:
+// the camera swaying under the cursor and the continuous idle rotations.
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+let prefersReducedMotion = reducedMotionQuery.matches;
+reducedMotionQuery.addEventListener('change', (e) => {
+  prefersReducedMotion = e.matches;
+  if (prefersReducedMotion) {
+    // Settle the camera back to centre rather than freezing it mid-sway
+    gsap.to(camera.position, { x: 0, y: 0, duration: 0.6, ease: 'power2.out' });
+    gsap.to(camera.rotation, { x: 0, y: 0, duration: 0.6, ease: 'power2.out' });
+  }
+});
+
 const animate = () => {
   requestAnimationFrame(animate);
 
+  // A backgrounded tab still gets frames in some browsers, and this scene is not
+  // cheap. Nothing here needs to advance while the page is not being looked at.
+  if (document.hidden) return;
+
+  frameCounter++;
   const elapsedTime = clock.getElapsedTime();
 
   // 1. Mouse Camera Sway (Organic 3D parallax drift)
-  const targetCamX = mouse.x * 2.5;
-  const targetCamY = mouse.y * 2.0;
-  camera.position.x += (targetCamX - camera.position.x) * 0.07;
-  camera.position.y += (targetCamY - camera.position.y) * 0.07;
+  if (!prefersReducedMotion) {
+    const targetCamX = mouse.x * 2.5;
+    const targetCamY = mouse.y * 2.0;
+    camera.position.x += (targetCamX - camera.position.x) * 0.07;
+    camera.position.y += (targetCamY - camera.position.y) * 0.07;
 
-  // Sway rotation slightly to look towards coordinates
-  camera.rotation.y += (mouse.x * 0.08 - camera.rotation.y) * 0.07;
-  camera.rotation.x += (-mouse.y * 0.08 - camera.rotation.x) * 0.07;
+    // Sway rotation slightly to look towards coordinates
+    camera.rotation.y += (mouse.x * 0.08 - camera.rotation.y) * 0.07;
+    camera.rotation.x += (-mouse.y * 0.08 - camera.rotation.x) * 0.07;
+  }
 
   // 2. Update Constellation Nodes & Dynamic Mouse Links (Takımyıldız Efekti)
   const target3D = getMouse3D(12);
@@ -2464,8 +2602,8 @@ const animate = () => {
   const lineColArr = constellationLines.geometry.attributes.color.array;
 
   let currentLineIdx = 0;
-  const connectionThreshold = 6.0;
-  const mouseConnectionThreshold = 10.0;
+  const connectionThresholdSq = 6.0 * 6.0;
+  const mouseConnectionThresholdSq = 10.0 * 10.0;
 
   // A. Drift nodes and update points positions
   for (let i = 0; i < constellationNodeCount; i++) {
@@ -2488,85 +2626,90 @@ const animate = () => {
   }
   constellationPoints.geometry.attributes.position.needsUpdate = true;
 
-  // B. Search and draw connecting lines between nodes and to the mouse cursor
-  for (let i = 0; i < constellationNodeCount; i++) {
-    const nodeA = constellationNodes[i];
+  // B. Search and draw connecting lines between nodes and to the mouse cursor.
+  // Rebuilt on a slower cadence than the render: the nodes drift by a fraction of a
+  // unit per frame, so which pairs are within range barely changes frame to frame.
+  if (frameCounter % linkRebuildInterval === 0) {
+    for (let i = 0; i < constellationNodeCount; i++) {
+      const nodeA = constellationNodes[i];
 
-    // Connect node to mouse cursor if within threshold (Takımyıldız Fare Bağlantısı)
-    const distToMouse = Math.sqrt(
-      (nodeA.x - target3D.x) ** 2 +
-      (nodeA.y - target3D.y) ** 2 +
-      (nodeA.z - target3D.z) ** 2
-    );
+      // Connect node to mouse cursor if within threshold (Takımyıldız Fare Bağlantısı).
+      // Compared squared to skip the square root; only the ordering matters here.
+      const mdx = nodeA.x - target3D.x;
+      const mdy = nodeA.y - target3D.y;
+      const mdz = nodeA.z - target3D.z;
+      const distToMouseSq = mdx * mdx + mdy * mdy + mdz * mdz;
 
-    if (distToMouse < mouseConnectionThreshold && currentLineIdx < maxLines) {
-      const idx = currentLineIdx * 6;
-      linePosArr[idx] = nodeA.x;
-      linePosArr[idx + 1] = nodeA.y;
-      linePosArr[idx + 2] = nodeA.z;
-
-      linePosArr[idx + 3] = target3D.x;
-      linePosArr[idx + 4] = target3D.y;
-      linePosArr[idx + 5] = target3D.z;
-
-      // Color gradient (Red to Orange)
-      lineColArr[idx] = 0.95;
-      lineColArr[idx + 1] = 0.19;
-      lineColArr[idx + 2] = 0.14;
-
-      lineColArr[idx + 3] = 0.98;
-      lineColArr[idx + 4] = 0.45;
-      lineColArr[idx + 5] = 0.09;
-
-      currentLineIdx++;
-    }
-
-    // Connect node to other nearby nodes
-    for (let j = i + 1; j < constellationNodeCount; j++) {
-      const nodeB = constellationNodes[j];
-      const dist = Math.sqrt(
-        (nodeA.x - nodeB.x) ** 2 +
-        (nodeA.y - nodeB.y) ** 2 +
-        (nodeA.z - nodeB.z) ** 2
-      );
-
-      if (dist < connectionThreshold && currentLineIdx < maxLines) {
+      if (distToMouseSq < mouseConnectionThresholdSq && currentLineIdx < maxLines) {
         const idx = currentLineIdx * 6;
         linePosArr[idx] = nodeA.x;
         linePosArr[idx + 1] = nodeA.y;
         linePosArr[idx + 2] = nodeA.z;
 
-        linePosArr[idx + 3] = nodeB.x;
-        linePosArr[idx + 4] = nodeB.y;
-        linePosArr[idx + 5] = nodeB.z;
+        linePosArr[idx + 3] = target3D.x;
+        linePosArr[idx + 4] = target3D.y;
+        linePosArr[idx + 5] = target3D.z;
 
-        // Color (Orange-Pink mix)
-        lineColArr[idx] = 0.98;
-        lineColArr[idx + 1] = 0.45;
-        lineColArr[idx + 2] = 0.09;
+        // Color gradient (Red to Orange)
+        lineColArr[idx] = 0.95;
+        lineColArr[idx + 1] = 0.19;
+        lineColArr[idx + 2] = 0.14;
 
-        lineColArr[idx + 3] = 0.95;
-        lineColArr[idx + 4] = 0.19;
-        lineColArr[idx + 5] = 0.8;
+        lineColArr[idx + 3] = 0.98;
+        lineColArr[idx + 4] = 0.45;
+        lineColArr[idx + 5] = 0.09;
 
         currentLineIdx++;
       }
+
+      // Connect node to other nearby nodes. This inner loop runs
+      // constellationNodeCount^2 / 2 times per frame, so it stays branch-cheap and
+      // square-root free: comparing squared distances gives the same result.
+      for (let j = i + 1; j < constellationNodeCount; j++) {
+        const nodeB = constellationNodes[j];
+        const dx = nodeA.x - nodeB.x;
+        const dy = nodeA.y - nodeB.y;
+        const dz = nodeA.z - nodeB.z;
+        const distSq = dx * dx + dy * dy + dz * dz;
+
+        if (distSq < connectionThresholdSq && currentLineIdx < maxLines) {
+          const idx = currentLineIdx * 6;
+          linePosArr[idx] = nodeA.x;
+          linePosArr[idx + 1] = nodeA.y;
+          linePosArr[idx + 2] = nodeA.z;
+
+          linePosArr[idx + 3] = nodeB.x;
+          linePosArr[idx + 4] = nodeB.y;
+          linePosArr[idx + 5] = nodeB.z;
+
+          // Color (Orange-Pink mix)
+          lineColArr[idx] = 0.98;
+          lineColArr[idx + 1] = 0.45;
+          lineColArr[idx + 2] = 0.09;
+
+          lineColArr[idx + 3] = 0.95;
+          lineColArr[idx + 4] = 0.19;
+          lineColArr[idx + 5] = 0.8;
+
+          currentLineIdx++;
+        }
+      }
     }
-  }
 
-  // Clear leftover lines inside geometry buffers
-  for (let i = currentLineIdx; i < maxLines; i++) {
-    const idx = i * 6;
-    linePosArr[idx] = 0;
-    linePosArr[idx + 1] = 0;
-    linePosArr[idx + 2] = -999;
-    linePosArr[idx + 3] = 0;
-    linePosArr[idx + 4] = 0;
-    linePosArr[idx + 5] = -999;
-  }
+    // Clear leftover lines inside geometry buffers
+    for (let i = currentLineIdx; i < maxLines; i++) {
+      const idx = i * 6;
+      linePosArr[idx] = 0;
+      linePosArr[idx + 1] = 0;
+      linePosArr[idx + 2] = -999;
+      linePosArr[idx + 3] = 0;
+      linePosArr[idx + 4] = 0;
+      linePosArr[idx + 5] = -999;
+    }
 
-  constellationLines.geometry.attributes.position.needsUpdate = true;
-  constellationLines.geometry.attributes.color.needsUpdate = true;
+    constellationLines.geometry.attributes.position.needsUpdate = true;
+    constellationLines.geometry.attributes.color.needsUpdate = true;
+  }
 
   // Update scroll velocity dampening and play scroll sounds
   smoothVelocity += (scrollVelocity - smoothVelocity) * 0.15;
@@ -2577,23 +2720,35 @@ const animate = () => {
     const targetFreq = 120 + Math.min(smoothVelocity * 10, 800);
     noiseGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.08);
     noiseFilter.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.08);
+
+    // Scrolling opens the drone's lowpass so the pad breathes with the page
+    // instead of sitting at a fixed 200Hz cutoff (the LFO still rides on top).
+    if (ambientFilter) {
+      const targetCutoff = 200 + Math.min(smoothVelocity * 14, 900);
+      ambientFilter.frequency.setTargetAtTime(targetCutoff, audioCtx.currentTime, 0.12);
+    }
   }
 
   // Highlight objects camera passes by attaching point light position to camera world position
   camera.getWorldPosition(cameraLight.position);
 
   // A. Portal swirl & ring rotations
-  portalSwirl.rotation.z += 0.003;
-  portalSwirl.rotation.y = Math.sin(elapsedTime * 0.5) * 0.1;
-  portalRing.rotation.y = Math.sin(elapsedTime * 0.2) * 0.05;
+  if (!prefersReducedMotion) {
+    portalSwirl.rotation.z += 0.003;
+    portalSwirl.rotation.y = Math.sin(elapsedTime * 0.5) * 0.1;
+    portalRing.rotation.y = Math.sin(elapsedTime * 0.2) * 0.05;
 
-  // B. Constellation slow rotation
-  constellationPoints.rotation.y = elapsedTime * 0.004;
-  constellationPoints.rotation.x = Math.sin(elapsedTime * 0.02) * 0.02;
+    // B. Constellation slow rotation
+    constellationPoints.rotation.y = elapsedTime * 0.004;
+    constellationPoints.rotation.x = Math.sin(elapsedTime * 0.02) * 0.02;
+  }
 
-  // C. Tunnel arches pulse glow
+  // C. Tunnel arches pulse glow. The emissive pulse is a brightness change rather
+  // than movement, so it stays on under reduced motion; only the spin stops.
   tunnelSegments.forEach((segment, i) => {
-    segment.rotation.z = Math.PI / 4 + elapsedTime * 0.02 * (i % 2 === 0 ? 1 : -1);
+    if (!prefersReducedMotion) {
+      segment.rotation.z = Math.PI / 4 + elapsedTime * 0.02 * (i % 2 === 0 ? 1 : -1);
+    }
     // Pulse emission intensity
     segment.material.emissiveIntensity = 1.0 + Math.sin(elapsedTime * 2 + i) * 0.4;
   });
