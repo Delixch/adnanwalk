@@ -169,6 +169,17 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.set(0, 0, 0); // Local center relative to group
 cameraGroup.add(camera);
 
+// Dynamic Camera FOV Adjustment for mobile screens to avoid tunnel cramp
+const updateCameraFOV = () => {
+  if (window.innerWidth < 768) {
+    camera.fov = 92; // Wider field of view on mobile devices to show more walls
+  } else {
+    camera.fov = 75; // Default desktop field of view
+  }
+  camera.updateProjectionMatrix();
+};
+updateCameraFOV(); // Run once initially
+
 // Renderer
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
@@ -184,7 +195,7 @@ renderer.toneMappingExposure = 1.2;
 // Resize Handler
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+  updateCameraFOV();
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
@@ -673,10 +684,22 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let hoveredMonolith = null;
 
+// Listen to mouse movement
 window.addEventListener('mousemove', (e) => {
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 });
+
+// Listen to touch events on mobile devices to update coordinates for 3D interactions
+const handleTouch = (e) => {
+  if (e.touches && e.touches.length > 0) {
+    const touch = e.touches[0];
+    mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+  }
+};
+window.addEventListener('touchstart', handleTouch, { passive: true });
+window.addEventListener('touchmove', handleTouch, { passive: true });
 
 // Scramble Text effect for cyberpunk matrix decryption look
 const scrambleText = (el, text) => {

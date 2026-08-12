@@ -1293,3 +1293,180 @@ header {
   box-shadow: 0 0 15px rgba(241, 48, 36, 0.3);
   transform: translateY(-2px);
 }
+
+/* === PREMIUM MOBILE RESPONSIVENESS OVERRIDES === */
+@media (max-width: 768px) {
+  /* 1. Centered and Clean Grid Sections */
+  .section-content {
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 60px 1.2rem 100px 1.2rem !important; /* give space for the bottom dock */
+    min-height: 100vh !important;
+  }
+
+  .text-side {
+    max-width: 100% !important;
+    align-self: center !important;
+    text-align: center !important;
+    padding: 1.5rem 1.2rem !important;
+    background: rgba(10, 5, 20, 0.5) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+  
+  .text-side.right-aligned {
+    text-align: center !important;
+  }
+
+  /* 2. Glassmorphic Floating Bottom Navigation Dock */
+  .floating-nav {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    top: auto !important;
+    transform: none !important;
+    flex-direction: row !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    border-radius: 20px !important;
+    padding: 0.5rem 0.4rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: rgba(8, 4, 15, 0.72) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                0 0 15px rgba(241, 48, 36, 0.12) !important;
+    z-index: 999 !important;
+  }
+  
+  .floating-nav-item {
+    margin: 0 !important;
+    padding: 6px 10px !important;
+  }
+  
+  .floating-nav-item::after {
+    display: none !important; /* Hide dot indicator */
+  }
+  
+  .floating-nav-item svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  /* 3. Typography Adjustments to prevent wraps and text clip */
+  .hero-content h1 {
+    font-size: 2.3rem !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.02rem !important;
+  }
+
+  .text-side h2 {
+    font-size: 1.8rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 0.8rem !important;
+  }
+  
+  p, .subtitle {
+    font-size: 0.85rem !important;
+    line-height: 1.45 !important;
+  }
+
+  /* 4. Skills and Project Grid layouts */
+  .skills-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.8rem !important;
+    margin-top: 1rem !important;
+  }
+  
+  .skill-card {
+    padding: 1rem !important;
+  }
+  
+  .skill-card h4 {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  /* 5. Compact Modal Padding & Header Controls */
+  .modal-content {
+    width: 100% !important;
+    padding: 2.5rem 1.2rem !important;
+  }
+  
+  .close-btn {
+    top: 1rem !important;
+    right: 1rem !important;
+    font-size: 2rem !important;
+  }
+
+  .gallery-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.6rem !important;
+  }
+  
+  .upload-trigger-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  /* 6. Sound & Interactive Buttons layout overrides */
+  .sound-btn {
+    bottom: 95px !important; /* Position it right above the navigation dock */
+    right: 20px !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  /* 7. Gallery grid aspect ratios and spacing */
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 0.8rem !important;
+    padding: 0.5rem 0 !important;
+  }
+  
+  .media-card {
+    border-radius: 10px !important;
+  }
+  
+  .media-thumbnail {
+    height: 120px !important;
+  }
+  
+  .media-info-bar {
+    padding: 0.5rem !important;
+  }
+  
+  .media-card-title {
+    font-size: 0.75rem !important;
+  }
+
+  /* 8. Lightbox full viewport fit on portrait screens */
+  .lightbox-content-wrapper {
+    max-width: 95vw !important;
+    max-height: 85vh !important;
+  }
+  
+  #lightbox-media-container {
+    max-height: 50vh !important;
+  }
+  
+  #lightbox-media-container img, #lightbox-media-container video {
+    max-height: 50vh !important;
+  }
+  
+  #lightbox-title {
+    font-size: 1.1rem !important;
+    margin-top: 0.8rem !important;
+  }
+  
+  #lightbox-desc {
+    font-size: 0.75rem !important;
+    padding: 0 0.5rem !important;
+  }
+}
