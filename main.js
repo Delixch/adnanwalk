@@ -1918,6 +1918,16 @@ if (uploadFileInput) {
 const MAX_IMAGE_EDGE = 2560;
 const IMAGE_COMPRESS_THRESHOLD = 1.5 * 1024 * 1024;
 
+// Some Android file pickers hand over a File with an empty `type`, and iOS
+// reports .mov as video/quicktime. Falling back to the extension keeps a video
+// from being sent to Cloudinary's image endpoint, which would reject it.
+const VIDEO_EXTENSIONS = /\.(mp4|mov|m4v|webm|avi|mkv|3gp|hevc|qt)$/i;
+
+const isVideoFile = (file) => {
+  if (file.type) return file.type.startsWith('video/');
+  return VIDEO_EXTENSIONS.test(file.name || '');
+};
+
 const compressImage = (file) => new Promise((resolve) => {
   if (!file.type.startsWith('image/') || file.size <= IMAGE_COMPRESS_THRESHOLD) {
     resolve(file);
@@ -1968,7 +1978,7 @@ const compressImage = (file) => new Promise((resolve) => {
 // Send the file straight to Cloudinary using a signature minted by /api/sign.
 // Uses XHR rather than fetch because only XHR reports upload progress.
 const uploadToCloudinary = (file, signature, onProgress) => new Promise((resolve, reject) => {
-  const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+  const resourceType = isVideoFile(file) ? 'video' : 'image';
   const form = new FormData();
   form.append('file', file);
   form.append('api_key', signature.apiKey);
@@ -2059,7 +2069,9 @@ window._doActualUpload = async (pass) => {
       secureUrl: cloudinaryResult.secure_url,
       publicId: cloudinaryResult.public_id,
       fileName: selectedFileNameRaw,
-      fileType: selectedFileTypeRaw,
+      // Normalised so the server files it under the right tab even when the
+      // picker gave us no MIME type at all
+      fileType: isVideoFile(selectedFile) ? (selectedFileTypeRaw || 'video/mp4') : (selectedFileTypeRaw || 'image/jpeg'),
       title: uploadMediaTitle.value || selectedFileNameRaw,
       location: uploadMediaLocation ? uploadMediaLocation.value : '',
       description: uploadMediaDescription ? uploadMediaDescription.value : ''
