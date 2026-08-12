@@ -203,7 +203,7 @@
       <div class="section-content gallery-content">
         <div class="badge">FOTOĞRAF & VİDEO</div>
         <h2>Adnan Walk</h2>
-        <p class="subtitle">Adnan'ın yürüyüş anları, yolda çektiği videolar ve özel fotoğraflar. 3D salonda uçuş yapabilir veya aşağıdaki sekmelerden medyaları inceleyip yenilerini ekleyebilirsiniz.</p>
+        <p class="subtitle">Adnan'ın yürüyüş anları, yolda çektiği videolar ve özel fotoğraflar. 3D perspektif galeride üzerine gelerek veya tıklayarak keşfedin.</p>
         
         <!-- Galeri Sekmeleri -->
         <div class="gallery-tabs">
@@ -224,13 +224,16 @@
           </button>
         </div>
 
-        <!-- 2D Grid Görünümü (Alt Bölüm) -->
-        <div id="gallery-grid" class="gallery-grid">
-          <!-- Dinamik medya kartları buraya gelecek -->
-          <div class="gallery-empty-state">
+        <!-- 3D Hover Gallery (Lightswind-style) -->
+        <div id="hover-gallery-3d" class="hover-gallery-3d">
+          <!-- JS tarafından dinamik olarak doldurulacak -->
+          <div class="gallery-empty-state" id="gallery-empty-state">
             <p>Bu kategoride henüz hiç medya yüklenmemiş. Şifrenizi girerek ilk medyayı yükleyebilirsiniz!</p>
           </div>
         </div>
+
+        <!-- Hidden legacy grid (used internally) -->
+        <div id="gallery-grid" class="gallery-grid" style="display:none;"></div>
       </div>
     </section>
 

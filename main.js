@@ -1276,75 +1276,261 @@ const fetchMedia = async () => {
   }
 };
 
-// Render the 2D grid media list
+// ============================================================
+// 3D HOVER GALLERY RENDERER (Lightswind ThreeDHoverGallery-style)
+// Props: itemWidth, itemHeight, gap, perspective, hoverScale,
+//        transitionDuration, backgroundColor, grayscaleStrength,
+//        brightnessLevel, activeWidth, rotationAngle, zDepth,
+//        enableKeyboardNavigation, autoPlay, autoPlayDelay
+// ============================================================
+let hg3dActiveIndex = null;
+let hg3dAutoPlayTimer = null;
+const HG3D_CONFIG = {
+  activeWidth: 35,           // vw of active strip
+  passiveWidth: 3,           // vw of inactive strip
+  rotationAngle: 35,         // degrees for neighbor perspective
+  zDepth: 85,                // px depth offset for neighbors
+  grayscaleStrength: 1,
+  brightnessLevel: 0.5,
+  transitionDuration: 1.2,   // seconds
+  autoPlay: true,
+  autoPlayDelay: 4000,
+  enableKeyboardNavigation: true,
+};
+
 const render2DGallery = () => {
-  if (!galleryGrid) return;
-  galleryGrid.innerHTML = '';
+  // Also keeps gallery-grid in sync (hidden) for deletion logic
+  if (galleryGrid) galleryGrid.innerHTML = '';
+  
+  const container = document.getElementById('hover-gallery-3d');
+  const emptyState = document.getElementById('gallery-empty-state');
+  if (!container) return;
+
+  // Clear existing strips and controls
+  container.querySelectorAll('.hg3d-strip, .hg3d-nav, .hg3d-dots').forEach(el => el.remove());
   
   // Filter current category
   const filtered = currentMediaList.filter(item => item.type === activeCategory);
-  
+
   if (filtered.length === 0) {
-    galleryGrid.innerHTML = `
-      <div class="gallery-empty-state">
-        <p>Bu kategoride henüz hiç medya yüklenmemiş. Şifrenizi girerek ilk medyayı yükleyebilirsiniz!</p>
-      </div>
-    `;
+    if (emptyState) emptyState.style.display = 'flex';
+    container.classList.remove('has-active');
+    // Stop autoplay
+    if (hg3dAutoPlayTimer) { clearInterval(hg3dAutoPlayTimer); hg3dAutoPlayTimer = null; }
     return;
   }
-  
-  filtered.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'media-card';
-    
-    let thumbHTML = '';
+
+  if (emptyState) emptyState.style.display = 'none';
+  hg3dActiveIndex = 0;
+
+  // ---- Build strips ----
+  const strips = filtered.map((item, idx) => {
+    const strip = document.createElement('div');
+    strip.className = 'hg3d-strip';
+    strip.setAttribute('data-idx', idx);
+
+    // Media element
     if (item.type === 'video') {
-      thumbHTML = `
-        <video class="media-thumbnail" muted loop playsinline src="${item.url}#t=0.5"></video>
-        <div class="media-video-overlay"></div>
-      `;
+      const vid = document.createElement('video');
+      vid.src = item.url + '#t=0.5';
+      vid.muted = true; vid.loop = true; vid.playsInline = true;
+      vid.preload = 'metadata';
+      strip.appendChild(vid);
+      // Video badge
+      const badge = document.createElement('div');
+      badge.className = 'hg3d-video-badge';
+      badge.textContent = '▶';
+      strip.appendChild(badge);
     } else {
-      thumbHTML = `<img class="media-thumbnail" src="${item.url}" alt="${item.title}" loading="lazy">`;
+      const img = document.createElement('img');
+      img.src = item.url;
+      img.alt = item.title;
+      img.loading = 'lazy';
+      strip.appendChild(img);
     }
-    
-    // Trash can delete button html (shown only if adminIsAdmin is true)
-    const deleteButtonHTML = window.adnanIsAdmin ? `
-      <div class="media-delete-btn" style="display: flex;" title="Bu Medyayı Sil">
-        <svg viewBox="0 0 24 24">
-          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-        </svg>
-      </div>
-    ` : '';
-    
-    card.innerHTML = `
-      ${thumbHTML}
-      ${deleteButtonHTML}
-      <div class="media-info-bar">
-        <span class="media-card-title">${item.title}</span>
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 0.2rem;">
-          <span class="media-card-date" style="font-size: 0.65rem;">${new Date(item.timestamp).toLocaleDateString('tr-TR')}</span>
-          ${item.location ? `<span class="media-card-location" style="font-size: 0.65rem; color: var(--primary-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;">📍 ${item.location}</span>` : ''}
-        </div>
-      </div>
+
+    // Info overlay
+    const info = document.createElement('div');
+    info.className = 'hg3d-strip-info';
+    info.innerHTML = `
+      <h4>${item.title}</h4>
+      ${item.location ? `<p>📍 ${item.location}</p>` : ''}
     `;
-    
-    // Listen to Card Clicks (Open Lightbox)
-    card.addEventListener('click', () => {
-      openLightbox(item);
+    strip.appendChild(info);
+
+    // Delete button (admin only)
+    const delBtn = document.createElement('button');
+    delBtn.className = 'hg3d-delete-btn' + (window.adnanIsAdmin ? ' visible' : '');
+    delBtn.title = 'Bu Medyayı Sil';
+    delBtn.innerHTML = '🗑️';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteMediaItem(item.id);
     });
-    
-    // Listen to Trash Can clicks
-    const deleteBtn = card.querySelector('.media-delete-btn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent opening lightbox
-        deleteMediaItem(item.id);
-      });
-    }
-    
-    galleryGrid.appendChild(card);
+    strip.appendChild(delBtn);
+
+    // Click → open lightbox or activate strip
+    strip.addEventListener('click', () => {
+      if (hg3dActiveIndex === idx) {
+        // Already active → open lightbox
+        openLightbox(item);
+        playRevealSound();
+      } else {
+        setHG3DActive(idx, strips, container, dots);
+        playHoverSound();
+      }
+    });
+
+    // Hover → play sound hint
+    strip.addEventListener('mouseenter', () => {
+      if (hg3dActiveIndex !== idx) playHoverSound();
+    });
+
+    container.appendChild(strip);
+    return strip;
   });
+
+  // ---- Prev/Next navigation arrows ----
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'hg3d-nav hg3d-nav-prev';
+  prevBtn.innerHTML = '&#8249;';
+  prevBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const next = (hg3dActiveIndex - 1 + filtered.length) % filtered.length;
+    setHG3DActive(next, strips, container, dots);
+    playRevealSound();
+  });
+  container.appendChild(prevBtn);
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'hg3d-nav hg3d-nav-next';
+  nextBtn.innerHTML = '&#8250;';
+  nextBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const next = (hg3dActiveIndex + 1) % filtered.length;
+    setHG3DActive(next, strips, container, dots);
+    playRevealSound();
+  });
+  container.appendChild(nextBtn);
+
+  // ---- Dot indicators ----
+  const dotsContainer = document.createElement('div');
+  dotsContainer.className = 'hg3d-dots';
+  const dots = filtered.map((_, idx) => {
+    const dot = document.createElement('div');
+    dot.className = 'hg3d-dot';
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setHG3DActive(idx, strips, container, dots);
+      playRevealSound();
+    });
+    dotsContainer.appendChild(dot);
+    return dot;
+  });
+  container.appendChild(dotsContainer);
+
+  // ---- Keyboard navigation ----
+  if (HG3D_CONFIG.enableKeyboardNavigation) {
+    // Remove old listener if any, then add new
+    container._keyHandler && document.removeEventListener('keydown', container._keyHandler);
+    container._keyHandler = (e) => {
+      if (e.key === 'ArrowLeft') {
+        const next = (hg3dActiveIndex - 1 + filtered.length) % filtered.length;
+        setHG3DActive(next, strips, container, dots);
+        playRevealSound();
+      } else if (e.key === 'ArrowRight') {
+        const next = (hg3dActiveIndex + 1) % filtered.length;
+        setHG3DActive(next, strips, container, dots);
+        playRevealSound();
+      }
+    };
+    document.addEventListener('keydown', container._keyHandler);
+  }
+
+  // ---- Touch swipe support ----
+  let touchStartX = 0;
+  container.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  container.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) {
+      const next = dx < 0
+        ? (hg3dActiveIndex + 1) % filtered.length
+        : (hg3dActiveIndex - 1 + filtered.length) % filtered.length;
+      setHG3DActive(next, strips, container, dots);
+      playRevealSound();
+    }
+  }, { passive: true });
+
+  // ---- AutoPlay ----
+  if (hg3dAutoPlayTimer) clearInterval(hg3dAutoPlayTimer);
+  if (HG3D_CONFIG.autoPlay && filtered.length > 1) {
+    hg3dAutoPlayTimer = setInterval(() => {
+      const next = (hg3dActiveIndex + 1) % filtered.length;
+      setHG3DActive(next, strips, container, dots);
+    }, HG3D_CONFIG.autoPlayDelay);
+
+    // Pause on user interaction
+    container.addEventListener('mouseenter', () => clearInterval(hg3dAutoPlayTimer), { once: false });
+    container.addEventListener('mouseleave', () => {
+      hg3dAutoPlayTimer = setInterval(() => {
+        const next = (hg3dActiveIndex + 1) % filtered.length;
+        setHG3DActive(next, strips, container, dots);
+      }, HG3D_CONFIG.autoPlayDelay);
+    });
+  }
+
+  // Activate first strip immediately
+  setHG3DActive(0, strips, container, dots);
 };
+
+// Apply active/neighbor/passive transforms to all strips
+const setHG3DActive = (idx, strips, container, dots) => {
+  hg3dActiveIndex = idx;
+  container.classList.add('has-active');
+
+  strips.forEach((strip, i) => {
+    strip.classList.remove('active', 'neighbor-l', 'neighbor-r');
+    strip.style.flex = `${HG3D_CONFIG.passiveWidth}vw`;
+
+    if (i === idx) {
+      strip.classList.add('active');
+      strip.style.flex = `${HG3D_CONFIG.activeWidth}vw`;
+      strip.style.transform = `perspective(3500px) rotateY(0deg) translateZ(0px)`;
+      strip.style.filter = 'grayscale(0) brightness(1)';
+      strip.style.zIndex = '2';
+      // Play video if applicable
+      const vid = strip.querySelector('video');
+      if (vid) { vid.currentTime = 0; vid.play().catch(() => {}); }
+    } else if (i === idx - 1) {
+      strip.classList.add('neighbor-l');
+      strip.style.transform = `perspective(3500px) rotateY(${HG3D_CONFIG.rotationAngle}deg) translateZ(-${HG3D_CONFIG.zDepth}px)`;
+      strip.style.filter = `grayscale(0.8) brightness(0.6)`;
+      strip.style.flex = `${HG3D_CONFIG.passiveWidth + 2}vw`;
+      strip.style.zIndex = '1';
+      const vid = strip.querySelector('video'); if (vid) vid.pause();
+    } else if (i === idx + 1) {
+      strip.classList.add('neighbor-r');
+      strip.style.transform = `perspective(3500px) rotateY(-${HG3D_CONFIG.rotationAngle}deg) translateZ(-${HG3D_CONFIG.zDepth}px)`;
+      strip.style.filter = `grayscale(0.8) brightness(0.6)`;
+      strip.style.flex = `${HG3D_CONFIG.passiveWidth + 2}vw`;
+      strip.style.zIndex = '1';
+      const vid = strip.querySelector('video'); if (vid) vid.pause();
+    } else {
+      strip.style.transform = 'none';
+      strip.style.filter = `grayscale(${HG3D_CONFIG.grayscaleStrength}) brightness(${HG3D_CONFIG.brightnessLevel})`;
+      strip.style.zIndex = '0';
+      const vid = strip.querySelector('video'); if (vid) vid.pause();
+    }
+  });
+
+  // Update dot indicators
+  if (dots) {
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === idx);
+    });
+  }
+};
+
 
 // Lightbox modal actions
 const openLightbox = (item) => {

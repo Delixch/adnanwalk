@@ -12,6 +12,7 @@
     "@supabase/supabase-js": "^2.112.3",
     "cloudinary": "^2.10.0",
     "gsap": "^3.12.5",
+    "lightswind": "^3.2.3",
     "three": "^0.160.0"
   },
   "devDependencies": {
