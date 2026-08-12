@@ -287,9 +287,6 @@ window.addEventListener('resize', () => {
       originalProjectsPanelParent.insertBefore(projectsPanel, originalProjectsPanelNextSibling);
     }
     projectsPanel.style.display = 'flex';
-    if (window.innerWidth >= 768) {
-      projectsPanel.style.top = ''; // Reset positioning on desktop
-    }
   }
 });
 
@@ -2235,16 +2232,25 @@ const handleProjectsPanelShift = (item, idx) => {
   }
   projectsPanel.style.display = 'flex';
 
-  // Smoothly slide the panel vertically to align with the clicked card on mobile viewports
-  if (window.innerWidth < 768) {
-    // Add offset adjustment so it lines up beautifully with the card
-    projectsPanel.style.top = `${item.offsetTop}px`;
-  } else {
-    projectsPanel.style.top = ''; // Reset to CSS default on desktop
-  }
-
   htmlProjItems.forEach(c => c.classList.remove('active'));
   item.classList.add('active');
+
+  // Smoothly slide the panel vertically to match the active card's position
+  const parentEl = originalProjectsPanelParent || projectsPanel.parentNode;
+  if (parentEl) {
+    const parentRect = parentEl.getBoundingClientRect();
+    const cardRect = item.getBoundingClientRect();
+    
+    // Calculate relative vertical top offset
+    const targetY = cardRect.top - parentRect.top;
+    
+    gsap.to(projectsPanel, {
+      '--panel-y': `${targetY}px`,
+      duration: 0.75,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    });
+  }
 
   // Trigger glitch flash animation
   projectsPanel.classList.remove('update-glitch');

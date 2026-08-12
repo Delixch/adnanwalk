@@ -495,6 +495,11 @@ header {
   justify-content: flex-start;
 }
 
+#projects-detail-panel {
+  transform: translate3d(0, var(--panel-y, 0px), 0) perspective(1200px) rotateY(24deg) rotateX(4deg) !important;
+  transition: transform-style 0.4s; /* don't transition transform directly to avoid lag with GSAP variable animation */
+}
+
 .text-side {
   max-width: 520px;
 }
@@ -1582,7 +1587,7 @@ header {
     z-index: 1 !important; /* Behind the cards */
     opacity: 0.45 !important; /* Semi-transparent holographic look */
     pointer-events: none !important; /* Click through it! */
-    transform: perspective(1000px) rotateY(25deg) rotateX(4deg) scale(0.85) !important;
+    transform: translate3d(0, var(--panel-y, 0px), 0) perspective(1000px) rotateY(25deg) rotateX(4deg) scale(0.85) !important;
     transform-style: preserve-3d !important;
     margin: 0 !important;
     border: 1px solid rgba(241, 48, 36, 0.3) !important;
