@@ -71,7 +71,7 @@ export const guidesData = [
             filename: "refactor.txt"
           },
           {
-            heading: "Performans sorunu bulduır",
+            heading: "Performans sorunu buldur",
             body: "Performans promptunda ölçüm istemek kritik. Aksi halde model \"daha hızlı olur\" diyerek okunabilirliği bozan ama ölçülebilir faydası olmayan değişiklikler önerir.",
             code: "Bu kodun performansını incele.\n\nHer öneri için şunu belirt:\n- Sorun tam olarak nerede (satır)\n- Neden yavaş (döngü karmaşıklığı, gereksiz kopya, layout thrashing vb.)\n- Tahmini kazanç ve bunu nasıl ölçebileceğim\n\nOkunabilirliği bozan mikro optimizasyon önerme.\n\n```\n[kodunu buraya yapıştır]\n```",
             lang: "text",
@@ -110,7 +110,7 @@ export const guidesData = [
             filename: "custom_hook.txt"
           },
           {
-            heading: "Gereksiz render'ı bulduır",
+            heading: "Gereksiz render'ı buldur",
             body: "Bu promptun değeri sıralamada: önce sebebi öğrenmek, sonra çözümü uygulamak. Doğrudan \"optimize et\" dersen model her yere useMemo serpiştirir ve kodu hem yavaşlatır hem okunmaz hâle getirir.",
             code: "Bu bileşen gereğinden fazla render oluyor.\n\n1. Önce SEBEBİNİ açıkla — hangi prop veya state her render'da yeni referans üretiyor?\n2. Sonra düzelt\n3. React.memo, useMemo veya useCallback'i sadece ölçülebilir fayda varsa kullan, her şeyi sarma\n4. Değişiklikten sonra render sayısını nasıl doğrulayacağımı söyle\n\n```\n[bileşen kodunu buraya yapıştır]\n```",
             lang: "text",

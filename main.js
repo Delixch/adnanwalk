@@ -336,6 +336,21 @@ window.addEventListener('DOMContentLoaded', () => {
         soundToggleBtn.classList.remove('active');
         soundToggleBtn.querySelector('.sound-icon').textContent = '🔈';
         soundToggleBtn.querySelector('.sound-text').textContent = 'SES: KAPALI';
+
+        // Mute panel video
+        if (panelVideoEl) {
+          panelVideoEl.muted = true;
+          panelVideoEl.volume = 0;
+        }
+
+        // Mute lightbox video if active
+        if (lightboxMediaContainer) {
+          const lightboxVid = lightboxMediaContainer.querySelector('video');
+          if (lightboxVid) {
+            lightboxVid.muted = true;
+            lightboxVid.volume = 0;
+          }
+        }
       } else {
         audioCtx.resume();
         setMasterLevel(1);
@@ -344,6 +359,21 @@ window.addEventListener('DOMContentLoaded', () => {
         soundToggleBtn.querySelector('.sound-icon').textContent = '🔊';
         soundToggleBtn.querySelector('.sound-text').textContent = 'SES: AÇIK';
         playHoverSound();
+
+        // Unmute panel video
+        if (panelVideoEl) {
+          panelVideoEl.muted = false;
+          panelVideoEl.volume = 1;
+        }
+
+        // Unmute lightbox video if active
+        if (lightboxMediaContainer) {
+          const lightboxVid = lightboxMediaContainer.querySelector('video');
+          if (lightboxVid) {
+            lightboxVid.muted = false;
+            lightboxVid.volume = 1;
+          }
+        }
       }
     });
   }
@@ -1443,6 +1473,8 @@ const openLightbox = (item) => {
     video.src = item.url;
     video.controls = true;
     video.autoplay = true;
+    video.muted = !isSoundEnabled;
+    video.volume = isSoundEnabled ? 1 : 0;
     video.style.maxWidth = '100%';
     video.style.maxHeight = '70vh';
     lightboxMediaContainer.appendChild(video);
@@ -1954,10 +1986,17 @@ fetchMedia();
 const panelVideoLayer = document.getElementById('panel-video-layer');
 const panelVideoEl    = document.getElementById('panel-video-el');
 
+if (panelVideoEl) {
+  panelVideoEl.muted = true;
+  panelVideoEl.volume = 0;
+}
+
 const openPanelVideo = () => {
   if (!panelVideoLayer) return;
   panelVideoLayer.style.display = 'flex';
   if (panelVideoEl) {
+    panelVideoEl.muted = !isSoundEnabled;
+    panelVideoEl.volume = isSoundEnabled ? 1 : 0;
     panelVideoEl.currentTime = 0;
     panelVideoEl.play().catch(() => {});
   }
