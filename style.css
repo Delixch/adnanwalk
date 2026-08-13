@@ -818,6 +818,470 @@ header {
   font-size: 1.1rem;
 }
 
+/* Rehber Modalı (Guide Modal) Desktop Styles */
+#guide-modal .modal-overlay {
+  backdrop-filter: blur(12px) !important;
+  background: rgba(3, 0, 8, 0.75);
+}
+
+.guide-modal-content {
+  position: relative;
+  width: 680px !important; /* Wide enough for sidebar + content */
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 0 0 auto !important; /* Push to the right */
+  border-radius: 0 !important; /* Drawer style */
+  border: none !important;
+  border-left: 1px solid rgba(241, 48, 36, 0.25) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transform: translateX(100%) !important;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  box-shadow: -15px 0 45px rgba(241, 48, 36, 0.08) !important;
+  background: rgba(6, 2, 13, 0.96) !important;
+}
+
+#guide-modal.active .guide-modal-content {
+  transform: translateX(0) !important;
+}
+
+#guide-modal {
+  justify-content: flex-end !important;
+  align-items: stretch !important;
+}
+
+.guide-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.guide-sidebar {
+  width: 290px;
+  height: 100%;
+  background: rgba(4, 1, 8, 0.6);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  padding: 2.2rem 1.2rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.guide-sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 2.5px;
+  color: var(--primary-color);
+  margin-bottom: 1.6rem;
+  padding: 0.55rem 0 0.55rem 0.7rem;
+  font-weight: 800;
+  border-left: 2px solid var(--primary-color);
+  line-height: 1;
+  text-shadow: 0 0 14px rgba(241, 48, 36, 0.45);
+}
+
+.guide-cat-icon {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(241, 48, 36, 0.4);
+  border-radius: 7px;
+  background: rgba(241, 48, 36, 0.09);
+  box-shadow: 0 0 14px rgba(241, 48, 36, 0.18), inset 0 0 8px rgba(241, 48, 36, 0.1);
+}
+
+.guide-cat-icon svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.guide-cat-group {
+  margin-bottom: 1.8rem;
+}
+
+.guide-cat-title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.7rem;
+  padding-left: 0.5rem;
+  opacity: 0.95;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-sidebar-topic {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.1rem 1fr 0.9rem;
+  align-items: center;
+  gap: 0.15rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  text-align: left;
+  padding: 0.68rem 0.7rem;
+  margin-bottom: 0.28rem;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    color 0.25s ease,
+    transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+    background-color 0.3s ease;
+}
+
+/* Left rail. Scales up from the centre on hover instead of appearing, so the
+   highlight reads as one movement with the row sliding right. */
+.guide-sidebar-topic::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8%;
+  bottom: 8%;
+  width: 2px;
+  background: var(--primary-color);
+  border-radius: 2px;
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: -1;
+}
+
+/* A light that sweeps across the row once on hover */
+.guide-sidebar-topic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(241, 48, 36, 0.16) 45%,
+    rgba(251, 191, 90, 0.12) 60%,
+    transparent 100%
+  );
+  transform: translateX(-105%);
+  transition: transform 0.55s cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.guide-sidebar-topic:hover,
+.guide-sidebar-topic:focus-visible {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.035);
+  transform: translateX(7px);
+  outline: none;
+}
+
+.guide-sidebar-topic:hover::before,
+.guide-sidebar-topic:focus-visible::before { transform: scaleY(1); }
+
+.guide-sidebar-topic:hover::after,
+.guide-sidebar-topic:focus-visible::after { transform: translateX(0); }
+
+.guide-sidebar-topic:focus-visible {
+  box-shadow: 0 0 0 1px rgba(251, 191, 90, 0.7);
+}
+
+.gt-index {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(241, 48, 36, 0.55);
+  transition: color 0.25s ease, text-shadow 0.25s ease;
+}
+
+.gt-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gt-arrow {
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--primary-color);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.guide-sidebar-topic:hover .gt-arrow,
+.guide-sidebar-topic:focus-visible .gt-arrow,
+.guide-sidebar-topic.active .gt-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.guide-sidebar-topic:hover .gt-index,
+.guide-sidebar-topic:focus-visible .gt-index {
+  color: var(--secondary-color);
+  text-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+}
+
+.guide-sidebar-topic.active {
+  color: #fff;
+  font-weight: 600;
+  background: linear-gradient(
+    90deg,
+    rgba(241, 48, 36, 0.22) 0%,
+    rgba(241, 48, 36, 0.07) 55%,
+    transparent 100%
+  );
+  transform: translateX(7px);
+}
+
+.guide-sidebar-topic.active::before {
+  transform: scaleY(1);
+  box-shadow: 0 0 12px 1px rgba(241, 48, 36, 0.85);
+  animation: guideRailPulse 2.4s ease-in-out infinite;
+}
+
+.guide-sidebar-topic.active .gt-index {
+  color: var(--accent-color);
+  text-shadow: 0 0 12px rgba(251, 191, 90, 0.55);
+}
+
+@keyframes guideRailPulse {
+  0%, 100% { box-shadow: 0 0 10px 0 rgba(241, 48, 36, 0.7); }
+  50%      { box-shadow: 0 0 18px 2px rgba(241, 48, 36, 1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-sidebar-topic,
+  .guide-sidebar-topic::before,
+  .guide-sidebar-topic::after,
+  .gt-arrow {
+    transition: none;
+  }
+  .guide-sidebar-topic.active::before { animation: none; }
+}
+
+.guide-main {
+  flex: 1;
+  height: 100%;
+  background: rgba(6, 2, 13, 0.3);
+  display: flex;
+  flex-direction: column;
+  padding: 3rem 3.5rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.guide-breadcrumb {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 0.8rem;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.guide-title {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 1.8rem;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1.2rem;
+  line-height: 1.2;
+}
+
+.guide-body {
+  flex: 1;
+}
+
+.guide-section {
+  margin-bottom: 2.5rem;
+}
+
+.guide-section h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--secondary-color);
+  margin-bottom: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.guide-section p {
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--text-muted);
+  margin-bottom: 1.2rem;
+}
+
+/* Custom styled code blocks */
+.guide-code-wrapper {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  background: rgba(4, 1, 8, 0.7);
+  margin: 1.5rem 0;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.guide-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.7rem 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.guide-filename {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.guide-code-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guide-lang-badge {
+  text-transform: uppercase;
+  font-weight: 800;
+  color: var(--secondary-color);
+  font-size: 0.7rem;
+  background: rgba(249, 115, 22, 0.08);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.guide-copy-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.guide-copy-btn:hover {
+  background: rgba(241, 48, 36, 0.12);
+  border-color: rgba(241, 48, 36, 0.3);
+  color: #fff;
+}
+
+.guide-code-pre {
+  margin: 0;
+  padding: 1.4rem;
+  overflow-x: auto;
+  background: transparent;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.guide-code-pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-family: inherit;
+  color: #e2e8f0;
+}
+
+/* Custom Syntax Highlight Tokens */
+.gh-keyword { color: #f13024; font-weight: bold; } /* Crimson */
+.gh-string { color: #fbbf5a; } /* Gold */
+.gh-comment { color: #5c6270; font-style: italic; } /* Muted Grey-Blue */
+.gh-number { color: #f97316; } /* Orange */
+.gh-function { color: #00f0ff; } /* Cyan */
+.gh-tag { color: #ff2a85; } /* Neon Pink */
+.gh-attr { color: #f97316; } /* Orange */
+
+/* Guide Topics Sub-list inside Project Cards */
+.guide-topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+  width: 100%;
+}
+
+.guide-topic {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  color: var(--text-muted);
+}
+
+.guide-topic:hover {
+  background: rgba(241, 48, 36, 0.06);
+  border-color: rgba(241, 48, 36, 0.25);
+  color: #fff;
+  transform: translateX(6px);
+}
+
+.gt-num {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  opacity: 0.8;
+}
+
+.gt-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gt-title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.gt-summary {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .floating-nav {
@@ -826,6 +1290,67 @@ header {
 }
 
 @media (max-width: 968px) {
+  /* Rehber Modalı Mobil Kuralları */
+  .guide-modal-content {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  .guide-container {
+    flex-direction: column !important;
+  }
+  .guide-sidebar {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 170px !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 1.2rem !important;
+  }
+  .guide-sidebar-title {
+    margin-bottom: 0.8rem !important;
+  }
+  .guide-nav-list {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0.8rem !important;
+    overflow-x: auto !important;
+    padding-bottom: 0.5rem !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .guide-cat-group {
+    margin-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+  }
+  .guide-cat-title {
+    display: none !important; /* Kategoriyi gizle ki mobilde yer kazanalım */
+  }
+  .guide-sidebar-topic {
+    margin-bottom: 0 !important;
+    display: inline-block !important;
+    padding: 0.45rem 0.85rem !important;
+    font-size: 0.78rem !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+  .guide-sidebar-topic.active {
+    border-left: 1px solid var(--primary-color) !important;
+    border-radius: 6px !important;
+    padding-left: 0.85rem !important;
+  }
+  .guide-main {
+    padding: 1.6rem 1.4rem !important;
+  }
+  .guide-title {
+    font-size: 1.6rem !important;
+    margin-bottom: 1.2rem !important;
+  }
+
   header {
     padding: 1.5rem 2rem;
   }
@@ -2058,4 +2583,90 @@ header {
     animation: none !important;
     --hg3d-angle: 120deg;
   }
+}
+
+/* Category INCELE button. Previously carried the same eight inline declarations
+   on all three cards, which made restyling them a search-and-replace job. */
+.guide-examine-btn {
+  position: absolute;
+  top: 1.6rem;
+  right: 1.6rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 10;
+}
+
+/* Guide topic summary, prerequisites and per-step notes */
+.guide-summary {
+  color: var(--text-color);
+  font-size: 0.98rem;
+  line-height: 1.65;
+  opacity: 0.9;
+  margin-bottom: 1.4rem;
+}
+
+.guide-prereq {
+  border: 1px solid rgba(251, 191, 90, 0.28);
+  border-left: 3px solid var(--accent-color);
+  background: rgba(251, 191, 90, 0.05);
+  border-radius: 10px;
+  padding: 1.05rem 1.25rem;
+  margin-bottom: 2.2rem;
+}
+
+.guide-prereq-title {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 0.6rem;
+}
+
+.guide-prereq ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.guide-prereq li {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+/* Sits directly under a code block, so it reads as part of that step */
+.guide-note {
+  position: relative;
+  margin-top: 0.85rem;
+  padding: 0.7rem 0.95rem 0.7rem 2.3rem;
+  border-radius: 8px;
+  background: rgba(241, 48, 36, 0.07);
+  border: 1px solid rgba(241, 48, 36, 0.22);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.guide-note::before {
+  content: '!';
+  position: absolute;
+  left: 0.85rem;
+  top: 0.72rem;
+  width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--primary-color);
+  border-radius: 50%;
+  color: var(--primary-color);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
 }

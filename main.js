@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { guidesData } from './guides.js';
 
 // The browser restores the previous scroll position by default, so reopening the
 // page dropped the visitor wherever they left off, usually the contact section at
@@ -1047,88 +1048,6 @@ htmlProjItems.forEach(item => {
   });
 });
 
-// --- 5B. IN-PAGE PROJECT DETAIL PANEL & 3D CAMERA ZOOM ---
-const projectData = [
-  {
-    title: "Hyperion Motoru",
-    desc: "Ham WebGL gölgelendiricileri ile güçlendirilen, yıldız ışığı kırılımlarını ve gravitasyonel merceklenmeleri simüle eden gerçek zamanlı parçacık motoru. Uzay-zaman bükülmelerini 60 FPS hızında tarayıcıya yansıtır.",
-    tags: ["WebGL", "Three.js", "Shaders", "GPU Math"],
-    stats: { fps: "60 FPS", load: "< 15ms", shader: "Custom GLSL" },
-    filename: "hyperion_field.glsl",
-    code: `void main() {
-  vec2 uv = gl_FragCoord.xy / resolution.xy;
-  float d = length(uv - 0.5) * gravitationalPull;
-  vec3 col = starColor * (0.01 / d);
-  gl_FragColor = vec4(col, 1.0);
-}`
-  },
-  {
-    title: "Neon Nexus",
-    desc: "Yeni nesil e-ticaret siteleri için geliştirilen, procedural 3D ürün konfigüratörü. Dinamik gölgelendirme, gerçek zamanlı materyal kaplama ve 3D model optimizasyonu sağlar.",
-    tags: ["Procedural 3D", "PBR Materials", "Vite", "Commerce"],
-    stats: { fps: "60 FPS", load: "< 35ms", shader: "MeshStandard" },
-    filename: "neon_nexus.js",
-    code: `const material = new THREE.MeshStandardMaterial({
-  color: params.neonColor,
-  roughness: 0.1,
-  metalness: 0.95,
-  emissive: params.neonColor
-});`
-  },
-  {
-    title: "Eter Alanları",
-    desc: "Devasa çok oyunculu ortamlar için optimize edilmiş, hafif voksel mimari alanlar. Üç boyutlu hacimsel veriler ve dinamik aydınlatma ağları kullanılarak oluşturulmuştur.",
-    tags: ["Voxels", "Multiplayer", "BufferGeometry", "LOD"],
-    stats: { fps: "60 FPS", load: "< 40ms", shader: "Dynamic Light" },
-    filename: "voxel_corridor.js",
-    code: `// Generate voxel grid mesh
-const indices = [];
-const vertices = [];
-buildFace(0, 1, 0, vertices, indices);
-geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));`
-  }
-];
-
-const modal = document.getElementById('project-modal');
-const modalOverlay = document.getElementById('modal-overlay');
-const modalCloseBtn = document.getElementById('modal-close-btn');
-const modalTitle = document.getElementById('modal-title');
-const modalDesc = document.getElementById('modal-desc');
-const modalTags = document.getElementById('modal-tags');
-const statFps = document.getElementById('stat-fps');
-const statLoad = document.getElementById('stat-load');
-const statShader = document.getElementById('stat-shader');
-const modalFilename = document.getElementById('modal-filename');
-const modalCode = document.getElementById('modal-code');
-
-const savedCamPos = new THREE.Vector3();
-const savedCamRot = new THREE.Euler();
-let isModalOpen = false;
-let isTransitioning = false; // Guard flag to prevent transition overlapping issues
-
-const playModalOpenSound = () => {
-  try {
-    if (!isSoundEnabled || !audioCtx) return;
-    const now = audioCtx.currentTime;
-    const playBlip = (freq, time, dur) => {
-      const osc = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, time);
-      gainNode.gain.setValueAtTime(0.015, time);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, time + dur);
-      osc.connect(gainNode);
-      gainNode.connect(masterGain);
-      osc.start(time);
-      osc.stop(time + dur);
-    };
-    playBlip(600, now, 0.08);
-    playBlip(800, now + 0.08, 0.08);
-    playBlip(1200, now + 0.16, 0.15);
-  } catch (e) {
-    console.warn("playModalOpenSound failed:", e);
-  }
-};
 
 const playModalCloseSound = () => {
   try {
@@ -1147,143 +1066,6 @@ const playModalCloseSound = () => {
   } catch (e) {
     console.warn("playModalCloseSound failed:", e);
   }
-};
-
-const openProjectDetails = (idx) => {
-  console.log("Opening project details. Modal:", isModalOpen, "Transitioning:", isTransitioning);
-  if (isModalOpen || isTransitioning) return;
-  isTransitioning = true;
-  isModalOpen = true;
-  
-  const data = projectData[idx];
-  if (!data) {
-    isTransitioning = false;
-    return;
-  }
-
-  // Populate data
-  modalTitle.textContent = data.title;
-  modalDesc.textContent = data.desc;
-  statFps.textContent = data.stats.fps;
-  statLoad.textContent = data.stats.load;
-  statShader.textContent = data.stats.shader;
-  modalFilename.textContent = data.filename;
-  modalCode.textContent = data.code;
-
-  // Populate tags
-  modalTags.innerHTML = '';
-  data.tags.forEach(t => {
-    const span = document.createElement('span');
-    span.className = 'tag';
-    span.textContent = t;
-    modalTags.appendChild(span);
-  });
-
-  // Open overlay classes
-  modal.style.display = 'flex';
-  modal.offsetHeight; // Force reflow
-  modal.classList.add('active');
-  playModalOpenSound();
-
-  // 1. Disable page scroll immediately (stops ScrollTrigger from firing)
-  document.body.style.overflow = 'hidden';
-
-  // 2. Disable all ScrollTrigger instances but ALLOW their animation to continue playing (prevents timeline pause state freeze)
-  if (typeof ScrollTrigger !== 'undefined') {
-    ScrollTrigger.getAll().forEach(st => st.disable(false, true));
-  }
-
-  // Save current camera transform before zooming
-  savedCamPos.copy(cameraGroup.position);
-  savedCamRot.copy(cameraGroup.rotation);
-
-  // Zoom camera directly in front of the selected monolith
-  let targetX = -4.5;
-  let targetY = 0.5;
-  let targetZ = -9;
-  
-  if (idx === 0) {
-    targetX = -4.5;
-    targetY = 0.5;
-    targetZ = -10.5;
-  } else if (idx === 1) {
-    targetX = -1.5;
-    targetY = 0.5;
-    targetZ = -14.5;
-  } else if (idx === 2) {
-    targetX = -6.5;
-    targetY = 0.5;
-    targetZ = -18.5;
-  }
-
-  gsap.to(cameraGroup.position, {
-    x: targetX,
-    y: targetY,
-    z: targetZ,
-    duration: 1.4,
-    ease: 'power3.inOut',
-    overwrite: 'none'
-  });
-
-  gsap.to(cameraGroup.rotation, {
-    x: 0,
-    y: 0,
-    z: 0,
-    duration: 1.4,
-    ease: 'power3.inOut',
-    overwrite: 'none',
-    onComplete: () => {
-      isTransitioning = false; // Zoom complete, release guard
-    }
-  });
-};
-
-const closeProjectDetails = () => {
-  console.log("Closing project details. Modal:", isModalOpen, "Transitioning:", isTransitioning);
-  if (!isModalOpen || isTransitioning) return;
-  isTransitioning = true;
-  isModalOpen = false;
-
-  modal.classList.remove('active');
-  playModalCloseSound();
-
-  // Hide display completely after transition completes
-  setTimeout(() => {
-    if (!isModalOpen) {
-      modal.style.display = 'none';
-    }
-  }, 500);
-
-  // Animate camera back to saved transform
-  gsap.to(cameraGroup.position, {
-    x: savedCamPos.x,
-    y: savedCamPos.y,
-    z: savedCamPos.z,
-    duration: 1.4,
-    ease: 'power3.inOut',
-    overwrite: 'none'
-  });
-
-  gsap.to(cameraGroup.rotation, {
-    x: savedCamRot.x,
-    y: savedCamRot.y,
-    z: savedCamRot.z,
-    duration: 1.4,
-    ease: 'power3.inOut',
-    overwrite: 'none',
-    onComplete: () => {
-      // 1. Re-enable all ScrollTriggers and reset their animation play state
-      if (typeof ScrollTrigger !== 'undefined') {
-        ScrollTrigger.getAll().forEach(st => st.enable(true, true));
-        ScrollTrigger.refresh();
-      }
-      
-      // 2. Restore page scroll
-      document.body.style.overflow = '';
-      
-      isTransitioning = false; // Transition fully complete, release guard
-    }
-  });
 };
 
 // --- 5D. ADNAN WALK MEDIA ---
@@ -2431,17 +2213,30 @@ const handleProjectsPanelShift = (item, idx) => {
 
 // Wire up events
 htmlProjItems.forEach(item => {
-  const link = item.querySelector('.project-link');
   const idx = parseInt(item.getAttribute('data-index'));
 
-  if (link) {
-    link.addEventListener('click', (e) => {
+  // Wire up category INCELE button inside the card header. It opens the guide at
+  // the category's first topic, which is what its data attributes already name.
+  const examineBtn = item.querySelector('.guide-examine-btn');
+  if (examineBtn) {
+    examineBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation();
-      // Link (İNCELE button) always opens full-detail sliding sidebar modal
-      openProjectDetails(idx);
+      e.stopPropagation(); // Stop card container click behavior (panel shift / video player)
+      window.openGuideModal(examineBtn.getAttribute('data-guide'), examineBtn.getAttribute('data-topic'));
     });
   }
+
+  // Wire up guide topic buttons inside the card
+  const topicBtns = item.querySelectorAll('.guide-topic');
+  topicBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // Stop card container click behavior (panel shift / video player)
+      const guideId = btn.getAttribute('data-guide');
+      const topicId = btn.getAttribute('data-topic');
+      window.openGuideModal(guideId, topicId);
+    });
+  });
 
   // Clicking the card body behaves as toggle/accordion/inline-details
   item.addEventListener('click', () => {
@@ -2488,10 +2283,6 @@ if (projectDeck) {
     handleProjectsPanelShift(htmlProjItems[0], 0);
   }
 }
-
-
-modalOverlay.addEventListener('click', closeProjectDetails);
-modalCloseBtn.addEventListener('click', closeProjectDetails);
 
 
 // --- 5C. 3D SKILLS DISPLAY MONOLITH (REPLACED WITH STABLE HTML PERSPECTIVE HUD) ---
@@ -3240,3 +3031,391 @@ window.addEventListener('load', () => {
 
 // Run loop
 animate();
+
+// --- 9. REHBER SİSTEMİ (GUIDE SYSTEM) ---
+
+// Custom Simple Regex-based Syntax Highlighter (Safe Tokenizer)
+const highlightCode = (code, lang) => {
+  if (!code) return '';
+  let escaped = code
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  const tokens = [];
+  let tokenCounter = 0;
+
+  const addToken = (text, className) => {
+    const id = `___TOKEN_${tokenCounter++}___`;
+    tokens.push({ id, html: `<span class="${className}">${text}</span>` });
+    return id;
+  };
+
+  if (lang === 'javascript' || lang === 'typescript' || lang === 'json' || lang === 'sql') {
+    // 1. Comments (temporarily extract)
+    escaped = escaped.replace(/(\/\/.*|\/\*[\s\S]*?\*\/)/g, (match) => {
+      return addToken(match, 'gh-comment');
+    });
+
+    // 2. Strings (temporarily extract)
+    escaped = escaped.replace(/(["'`])([\s\S]*?)\1/g, (match) => {
+      return addToken(match, 'gh-string');
+    });
+
+    // 3. Keywords
+    const keywordRegex = /\b(const|let|var|function|return|import|export|from|async|await|try|catch|if|else|for|while|new|throw|class|extends|interface|type|default|select|from|where|insert|into|create|table|primary|key|foreign|update|delete|true|false|null|undefined)\b/g;
+    escaped = escaped.replace(keywordRegex, (match) => {
+      return addToken(match, 'gh-keyword');
+    });
+
+    // 4. Numbers
+    escaped = escaped.replace(/\b(\d+)\b/g, (match) => {
+      return addToken(match, 'gh-number');
+    });
+  } else if (lang === 'html') {
+    // 1. HTML Comments
+    escaped = escaped.replace(/(&lt;!--[\s\S]*?--&gt;)/g, (match) => {
+      return addToken(match, 'gh-comment');
+    });
+
+    // 2. Tags
+    escaped = escaped.replace(/(&lt;\/?[a-zA-Z0-9:-]+&gt;)/g, (match) => {
+      return addToken(match, 'gh-tag');
+    });
+
+    // 3. Attributes
+    escaped = escaped.replace(/\b([a-zA-Z:-]+)=/g, (match, attrName) => {
+      return addToken(attrName, 'gh-attr') + '=';
+    });
+  } else if (lang === 'bash' || lang === 'shell') {
+    // Comments
+    escaped = escaped.replace(/(#.*)/g, (match) => {
+      return addToken(match, 'gh-comment');
+    });
+  }
+
+  // Final pass: restore all tokens
+  for (let i = 0; i < tokens.length; i++) {
+    escaped = escaped.replace(tokens[i].id, tokens[i].html);
+  }
+
+  return escaped;
+};
+
+// Clipboard copying with fallback
+window.copyToClipboard = (text, btnId) => {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+
+  const onSuccess = () => {
+    btn.textContent = 'Kopyalandı ✓';
+    btn.style.color = '#fbbf5a'; // gold highlight
+    btn.style.borderColor = '#fbbf5a';
+    setTimeout(() => {
+      btn.textContent = 'Kopyala';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1500);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess).catch(err => {
+      console.warn('Clipboard write failed, using fallback:', err);
+      fallbackCopy(text, onSuccess);
+    });
+  } else {
+    fallbackCopy(text, onSuccess);
+  }
+};
+
+const fallbackCopy = (text, callback) => {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    callback();
+  } catch (err) {
+    console.error('Fallback copying failed:', err);
+  }
+  document.body.removeChild(textArea);
+};
+
+// Dynamic content renderer
+window.loadGuideTopic = (catId, topicId) => {
+  const category = guidesData.find(c => c.id === catId);
+  if (!category) return;
+  const topic = category.topics.find(t => t.id === topicId);
+  if (!topic) return;
+
+  // Breadcrumb
+  const breadcrumb = document.getElementById('guide-breadcrumb');
+  if (breadcrumb) {
+    breadcrumb.innerHTML = `${category.title} &rsaquo; ${topic.title}`;
+  }
+
+  // Title
+  const titleEl = document.getElementById('guide-modal-title');
+  if (titleEl) {
+    titleEl.textContent = topic.title;
+  }
+
+  // Body Content
+  const bodyEl = document.getElementById('guide-body');
+  if (bodyEl) {
+    bodyEl.innerHTML = '';
+
+    // One-line summary of what the topic covers
+    if (topic.summary) {
+      const summaryEl = document.createElement('p');
+      summaryEl.className = 'guide-summary';
+      summaryEl.textContent = topic.summary;
+      bodyEl.appendChild(summaryEl);
+    }
+
+    // What has to be ready before starting. Without this the reader copies a
+    // command, hits an error that has nothing to do with the topic, and stalls.
+    if (topic.prereq && topic.prereq.length) {
+      const prereqBox = document.createElement('div');
+      prereqBox.className = 'guide-prereq';
+
+      const prereqTitle = document.createElement('div');
+      prereqTitle.className = 'guide-prereq-title';
+      prereqTitle.textContent = 'Başlamadan önce';
+      prereqBox.appendChild(prereqTitle);
+
+      const list = document.createElement('ul');
+      topic.prereq.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        list.appendChild(li);
+      });
+      prereqBox.appendChild(list);
+      bodyEl.appendChild(prereqBox);
+    }
+
+    topic.sections.forEach((sec, sIdx) => {
+      const secDiv = document.createElement('div');
+      secDiv.className = 'guide-section';
+
+      // Heading
+      const heading = document.createElement('h3');
+      heading.textContent = sec.heading;
+      secDiv.appendChild(heading);
+
+      // Body text
+      const bodyText = document.createElement('p');
+      bodyText.textContent = sec.body;
+      secDiv.appendChild(bodyText);
+
+      // Code block
+      if (sec.code) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'guide-code-wrapper';
+        
+        const btnId = `copy-btn-${catId}-${topicId}-${sIdx}`;
+        wrapper.innerHTML = `
+          <div class="guide-code-header">
+            <span class="guide-filename">${sec.filename || 'source'}</span>
+            <div class="guide-code-actions">
+              <span class="guide-lang-badge">${sec.lang || 'text'}</span>
+              <button class="guide-copy-btn" id="${btnId}">Kopyala</button>
+            </div>
+          </div>
+          <pre class="guide-code-pre"><code>${highlightCode(sec.code, sec.lang)}</code></pre>
+        `;
+        
+        // Add direct listener to prevent inline onclick issues
+        const copyBtn = wrapper.querySelector('.guide-copy-btn');
+        if (copyBtn) {
+          copyBtn.addEventListener('click', () => {
+            window.copyToClipboard(sec.code, btnId);
+          });
+        }
+        
+        secDiv.appendChild(wrapper);
+      }
+
+      // The bit that says copying the block is not the end of the job: the next
+      // required step, the platform difference, or the trap in this snippet.
+      if (sec.note) {
+        const noteEl = document.createElement('p');
+        noteEl.className = 'guide-note';
+        noteEl.textContent = sec.note;
+        secDiv.appendChild(noteEl);
+      }
+
+      bodyEl.appendChild(secDiv);
+    });
+  }
+
+  // Highlight active link in sidebar navigation
+  document.querySelectorAll('.guide-sidebar-topic').forEach(btn => {
+    if (btn.getAttribute('data-topic') === topicId) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // Scroll main body area to top
+  const mainArea = document.querySelector('.guide-main');
+  if (mainArea) mainArea.scrollTop = 0;
+};
+
+// Build the navigation for one category only. Listing all three categories here
+// undid the separation the cards establish on the page: the visitor picks a
+// category, so the window stays inside it. Another category means closing this
+// window and choosing a topic from that card.
+// Line icons instead of the emoji the data carries: an emoji renders in whatever
+// the OS decides, at whatever weight, and never matches the panel's line work.
+const CATEGORY_ICONS = {
+  'ai-prompts': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3 3 0 0 0-3 3 2.6 2.6 0 0 0-1.6 4.6A2.8 2.8 0 0 0 9 17a2.6 2.6 0 0 0 3 2.5V4.5Z"/><path d="M12 4.5a3 3 0 0 1 3 3 2.6 2.6 0 0 1 1.6 4.6A2.8 2.8 0 0 1 15 17a2.6 2.6 0 0 1-3 2.5"/><path d="M12 8.5h2M12 12h-2M12 15.5h2"/></svg>',
+  'code-setup': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M2.5 8.5h19"/><path d="m7 12.5 2 2-2 2M11.5 16.5h4"/></svg>',
+  'ai-projects': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5c3 2.2 4.8 5.6 4.8 9.4L12 17l-4.8-5.1C7.2 8.1 9 4.7 12 2.5Z"/><circle cx="12" cy="10" r="1.9"/><path d="m8.4 16-1.7 3.7 3.6-1.3M15.6 16l1.7 3.7-3.6-1.3"/></svg>'
+};
+
+const buildGuideNavigation = (catId) => {
+  const listContainer = document.getElementById('guide-nav-list');
+  if (!listContainer) return;
+  listContainer.innerHTML = '';
+
+  const cat = guidesData.find(c => c.id === catId);
+  if (!cat) return;
+
+  const sidebarTitle = document.querySelector('.guide-sidebar-title');
+  if (sidebarTitle) {
+    sidebarTitle.innerHTML =
+      `<span class="guide-cat-icon">${CATEGORY_ICONS[cat.id] || ''}</span><span>${cat.title}</span>`;
+  }
+
+  const groupDiv = document.createElement('div');
+  groupDiv.className = 'guide-cat-group';
+
+  cat.topics.forEach((topic, i) => {
+    const topicBtn = document.createElement('button');
+    topicBtn.className = 'guide-sidebar-topic';
+    topicBtn.setAttribute('data-topic', topic.id);
+    topicBtn.setAttribute('data-category', cat.id);
+    // The number is not decoration: the topics run easiest to hardest
+    topicBtn.innerHTML =
+      `<span class="gt-index">${String(i + 1).padStart(2, '0')}</span>` +
+      `<span class="gt-label">${topic.title}</span>` +
+      `<span class="gt-arrow" aria-hidden="true">&rsaquo;</span>`;
+    topicBtn.addEventListener('click', () => {
+      window.loadGuideTopic(cat.id, topic.id);
+    });
+    groupDiv.appendChild(topicBtn);
+  });
+
+  listContainer.appendChild(groupDiv);
+
+  // Deal the items in one after another so the menu arrives, rather than
+  // appearing fully formed the instant the window opens.
+  if (!prefersReducedMotion) {
+    gsap.from(groupDiv.children, {
+      x: -26,
+      opacity: 0,
+      duration: 0.45,
+      stagger: 0.055,
+      ease: 'power3.out',
+      clearProps: 'transform,opacity'
+    });
+  }
+};
+
+// Open and Close controls
+window.openGuideModal = (catId, topicId) => {
+  const modal = document.getElementById('guide-modal');
+  if (!modal) return;
+
+  // Build navigation for the category the visitor came from
+  buildGuideNavigation(catId);
+  // Load specified content
+  window.loadGuideTopic(catId, topicId);
+
+  // Show modal
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    modal.classList.add('active');
+  }, 20);
+
+  // Lock scrolling
+  document.body.style.overflow = 'hidden';
+
+  // Add Focus Trap
+  setupGuideFocusTrap();
+};
+
+window.closeGuideModal = () => {
+  const modal = document.getElementById('guide-modal');
+  if (!modal) return;
+
+  modal.classList.remove('active');
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 400);
+
+  // Unlock scrolling
+  document.body.style.overflow = '';
+};
+
+// Focus Trap Implementation
+let guideFocusCleanup = null;
+const setupGuideFocusTrap = () => {
+  const modal = document.getElementById('guide-modal');
+  if (!modal) return;
+
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  
+  if (guideFocusCleanup) {
+    modal.removeEventListener('keydown', guideFocusCleanup);
+  }
+
+  guideFocusCleanup = (e) => {
+    if (e.key !== 'Tab') return;
+    
+    const focusableElements = modal.querySelectorAll(focusableSelectors);
+    const firstEl = focusableElements[0];
+    const lastEl = focusableElements[focusableElements.length - 1];
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstEl) {
+        lastEl.focus();
+        e.preventDefault();
+      }
+    } else {
+      if (document.activeElement === lastEl) {
+        firstEl.focus();
+        e.preventDefault();
+      }
+    }
+  };
+
+  modal.addEventListener('keydown', guideFocusCleanup);
+  
+  // Set initial focus to close button
+  const closeBtn = document.getElementById('guide-modal-close-btn');
+  if (closeBtn) closeBtn.focus();
+};
+
+// Global closing event bindings
+document.addEventListener('DOMContentLoaded', () => {
+  const closeBtn = document.getElementById('guide-modal-close-btn');
+  const overlay = document.getElementById('guide-modal-overlay');
+
+  if (closeBtn) closeBtn.addEventListener('click', window.closeGuideModal);
+  if (overlay) overlay.addEventListener('click', window.closeGuideModal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('guide-modal');
+      if (modal && modal.classList.contains('active')) {
+        window.closeGuideModal();
+      }
+    }
+  });
+});

@@ -332,7 +332,7 @@ export default defineConfig(({ mode }) => {
                       console.error("[API] Delete affected zero rows for id:", id,
                         "- SUPABASE_SERVICE_KEY is probably missing, so RLS blocked it.");
                       res.statusCode = 500;
-                      res.end(JSON.stringify({ error: "Medya silinemedi: sunucunun veritabanında silme yetkisi yok." }));
+                      res.end(JSON.stringify({ error: "Medya silinemedi: sunucuda SUPABASE_SERVICE_KEY tanımlı değil, veritabanı silme iznini reddediyor." }));
                       return;
                     }
                     console.log("[API] Deleted row from Supabase:", id);

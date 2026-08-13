@@ -91,7 +91,7 @@ export default async function handler(req, res) {
       console.error('[api/delete] Delete affected zero rows for id:', id,
         '- SUPABASE_SERVICE_KEY is probably missing, so RLS blocked it.');
       res.status(500).json({
-        error: 'Medya silinemedi: sunucunun veritabanında silme yetkisi yok.'
+        error: 'Medya silinemedi: sunucuda SUPABASE_SERVICE_KEY tanımlı değil, veritabanı silme iznini reddediyor.'
       });
       return;
     }

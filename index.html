@@ -243,38 +243,203 @@
           <p>WebGL alanında yüzen 3D monolit plakalara farenizi yaklaştırarak (veya menüden seçerek) mimari dijital enstalasyonları önizleyebilirsiniz.</p>
           
           <div class="project-list">
-            <div class="project-item active" data-index="0">
-              <div class="project-info">
+            <!-- 01: AI Promptları -->
+            <div class="project-item active" data-index="0" style="position: relative;">
+              <div class="project-info" style="width: 100%;">
                 <span class="num">01</span>
-                <h3>Hyperion Motoru</h3>
-                <p>Ham WebGL gölgelendirici (shader) dizileriyle yazılmış, gerçek zamanlı astrofiziksel görselleştirme ve güneş simülasyonu.</p>
+                <h3 style="margin-top: 0.4rem; margin-bottom: 1.2rem; padding-right: 80px;">AI Promptları</h3>
+                
+                <div class="guide-topics-list">
+                  <button class="guide-topic" data-guide="ai-prompts" data-topic="chatgpt-prompts">
+                    <span class="gt-num">01.1</span>
+                    <span class="gt-content">
+                      <span class="gt-title">ChatGPT Promptları</span>
+                      <span class="gt-summary">Günlük işlerde ChatGPT'den maksimum verim alma promptları.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-prompts" data-topic="coding-prompts">
+                    <span class="gt-num">01.2</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Kodlama Promptları</span>
+                      <span class="gt-summary">Kod kısaltma ve refactoring süreçleri için geliştirilmiş promptlar.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-prompts" data-topic="react-prompts">
+                    <span class="gt-num">01.3</span>
+                    <span class="gt-content">
+                      <span class="gt-title">React Promptları</span>
+                      <span class="gt-summary">Component tasarımı, custom hook'lar ve state yönetimi promptları.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-prompts" data-topic="debug-prompts">
+                    <span class="gt-num">01.4</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Debug Promptları</span>
+                      <span class="gt-summary">Konsola düşen hataları veya mantıksal bug'ları hızlıca çözme promptları.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-prompts" data-topic="project-generation-prompts">
+                    <span class="gt-num">01.5</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Proje Oluşturma Promptları</span>
+                      <span class="gt-summary">Sıfırdan bir projenin dosya yapısını ve temel modüllerini oluşturma.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-prompts" data-topic="ready-templates">
+                    <span class="gt-num">01.6</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Hazır Prompt & Örnekler</span>
+                      <span class="gt-summary">Doğrudan kopyalayıp kullanabileceğiniz hazır prompt şablonları.</span>
+                    </span>
+                  </button>
+                </div>
               </div>
-              <a href="https://github.com" target="_blank" class="project-link">
+              <button class="project-link guide-examine-btn" data-guide="ai-prompts" data-topic="chatgpt-prompts" aria-label="Kategoriyi İncele">
                 <span class="link-text">İNCELE</span>
-                <svg viewBox="0 0 24 24"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-8.29-1.42 1.42L16.86 11H5v2z"/></svg>
-              </a>
+                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
             </div>
-            <div class="project-item" data-index="1">
-              <div class="project-info">
+
+            <!-- 02: Kod & Kurulum -->
+            <div class="project-item" data-index="1" style="position: relative;">
+              <div class="project-info" style="width: 100%;">
                 <span class="num">02</span>
-                <h3>Neon Nexus</h3>
-                <p>Prosedürel 3D ürün özelleştirme ve gerçek zamanlı dinamik render sunan yeni nesil e-ticaret arayüzü.</p>
+                <h3 style="margin-top: 0.4rem; margin-bottom: 1.2rem; padding-right: 80px;">Kod & Kurulum</h3>
+                
+                <div class="guide-topics-list">
+                  <button class="guide-topic" data-guide="code-setup" data-topic="react-setup">
+                    <span class="gt-num">02.1</span>
+                    <span class="gt-content">
+                      <span class="gt-title">React Kurulumu</span>
+                      <span class="gt-summary">Modern React projelerini sıfırdan kurma ve yapılandırma rehberi.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="code-setup" data-topic="typescript-setup">
+                    <span class="gt-num">02.2</span>
+                    <span class="gt-content">
+                      <span class="gt-title">TypeScript Kurulumu</span>
+                      <span class="gt-summary">Projelere TypeScript ekleme ve konfigürasyon (tsconfig) ayarları.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="code-setup" data-topic="javascript-examples">
+                    <span class="gt-num">02.3</span>
+                    <span class="gt-content">
+                      <span class="gt-title">JavaScript Örnekleri</span>
+                      <span class="gt-summary">Günlük geliştirmede sık kullanılan pratik JS kod kalıpları.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="code-setup" data-topic="npm-commands">
+                    <span class="gt-num">02.4</span>
+                    <span class="gt-content">
+                      <span class="gt-title">npm/pnpm Komutları</span>
+                      <span class="gt-summary">Paket yönetimi, versiyon güncelleme ve script komutları.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="code-setup" data-topic="script-installation">
+                    <span class="gt-num">02.5</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Script Kurulumu</span>
+                      <span class="gt-summary">Sayfalara harici JS scriptleri entegre etme ve yüklenme sıraları.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="code-setup" data-topic="api-integrations">
+                    <span class="gt-num">02.6</span>
+                    <span class="gt-content">
+                      <span class="gt-title">API Entegrasyonları</span>
+                      <span class="gt-summary">Fetch API, Axios kullanımı ve hata yönetimi.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="code-setup" data-topic="error-handling">
+                    <span class="gt-num">02.7</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Hata Çözümü</span>
+                      <span class="gt-summary">Try-Catch yapıları, promise catch ve hata yakalama yaklaşımları.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="code-setup" data-topic="step-by-step-projects">
+                    <span class="gt-num">02.8</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Adım Adım Projeler</span>
+                      <span class="gt-summary">Basit uygulamaları sıfırdan yazma kılavuzları.</span>
+                    </span>
+                  </button>
+                </div>
               </div>
-              <a href="https://github.com" target="_blank" class="project-link">
+              <button class="project-link guide-examine-btn" data-guide="code-setup" data-topic="react-setup" aria-label="Kategoriyi İncele">
                 <span class="link-text">İNCELE</span>
-                <svg viewBox="0 0 24 24"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-8.29-1.42 1.42L16.86 11H5v2z"/></svg>
-              </a>
+                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
             </div>
-            <div class="project-item" data-index="2">
-              <div class="project-info">
+
+            <!-- 03: AI ile Proje Yap -->
+            <div class="project-item" data-index="2" style="position: relative;">
+              <div class="project-info" style="width: 100%;">
                 <span class="num">03</span>
-                <h3>Eter Alanları</h3>
-                <p>Çok oyunculu sanal dünyalar için optimize edilmiş, ultra hafif voksel ağlı mimari koridorlar.</p>
+                <h3 style="margin-top: 0.4rem; margin-bottom: 1.2rem; padding-right: 80px;">AI ile Proje Yap</h3>
+                
+                <div class="guide-topics-list">
+                  <button class="guide-topic" data-guide="ai-projects" data-topic="ai-flow">
+                    <span class="gt-num">03.1</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Bu Projeyi AI ile Nasıl Yaparım</span>
+                      <span class="gt-summary">Portfolyo projesinin Three.js ve fütüristik yapısını yapay zekaya yaptırma.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-projects" data-topic="prompt-to-code">
+                    <span class="gt-num">03.2</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Prompt'tan Sonuca Akış</span>
+                      <span class="gt-summary">Prompt yazıp kodu aldıktan sonra test etme, hata ayıklama ve entegre etme.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-projects" data-topic="mini-projects">
+                    <span class="gt-num">03.3</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Örnek Mini Projeler</span>
+                      <span class="gt-summary">AI yardımıyla 1 saat içinde yapıp canlıya alabileceğiniz uygulama fikirleri.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-projects" data-topic="react-tailwind">
+                    <span class="gt-num">03.4</span>
+                    <span class="gt-content">
+                      <span class="gt-title">React + Tailwind</span>
+                      <span class="gt-summary">React bileşenlerini TailwindCSS ile hızlıca görselleştirme pratikleri.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-projects" data-topic="nextjs-guide">
+                    <span class="gt-num">03.5</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Next.js</span>
+                      <span class="gt-summary">Next.js App Router, SSR ve dinamik rotalama temelleri.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-projects" data-topic="api-usage">
+                    <span class="gt-num">03.6</span>
+                    <span class="gt-content">
+                      <span class="gt-title">API Kullanımı</span>
+                      <span class="gt-summary">Harici API'lerden veri çekip güvenli bir şekilde ekranda listeleme.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-projects" data-topic="git-github">
+                    <span class="gt-num">03.7</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Git/GitHub</span>
+                      <span class="gt-summary">Kodları GitHub'a yedekleme, branch açma ve commit disiplini.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="ai-projects" data-topic="deploy-guides">
+                    <span class="gt-num">03.8</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Deploy Rehberleri</span>
+                      <span class="gt-summary">Projeyi Vercel, Netlify veya GitHub Pages ile saniyeler içinde yayına alma.</span>
+                    </span>
+                  </button>
+                </div>
               </div>
-              <a href="https://github.com" target="_blank" class="project-link">
+              <button class="project-link guide-examine-btn" data-guide="ai-projects" data-topic="ai-flow" aria-label="Kategoriyi İncele">
                 <span class="link-text">İNCELE</span>
-                <svg viewBox="0 0 24 24"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-8.29-1.42 1.42L16.86 11H5v2z"/></svg>
-              </a>
+                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -398,40 +563,26 @@
     <span class="sound-text">SES: KAPALI</span>
   </button>
 
-  <!-- Proje Detay Paneli (Modal) -->
-  <div id="project-modal" class="project-modal">
-    <div class="modal-overlay" id="modal-overlay"></div>
-    <div class="modal-content glass-panel">
-      <button class="close-btn" id="modal-close-btn">&times;</button>
-      <div class="modal-body">
-        <div class="badge" id="modal-badge">PROJE DETAYLARI</div>
-        <h2 id="modal-title">Proje Adı</h2>
-        <div class="project-tags" id="modal-tags">
-          <!-- Dinamik Etiketler -->
-        </div>
-        <p id="modal-desc">Detaylı açıklama...</p>
-        
-        <div class="project-stats">
-          <div class="stat-box">
-            <span class="stat-label">Performans</span>
-            <span class="stat-value" id="stat-fps">60 FPS</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">Yüklenme Süresi</span>
-            <span class="stat-value" id="stat-load">&lt; 30ms</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">Gölgelendirici</span>
-            <span class="stat-value" id="stat-shader">GLSL</span>
+  <!-- Rehber Modalı (Yeni Bölüm) -->
+  <div id="guide-modal" class="project-modal" role="dialog" aria-modal="true" aria-labelledby="guide-modal-title" style="display: none;">
+    <div class="modal-overlay" id="guide-modal-overlay"></div>
+    <div class="modal-content guide-modal-content glass-panel">
+      <button class="close-btn" id="guide-modal-close-btn" aria-label="Rehberi Kapat">&times;</button>
+      <div class="guide-container">
+        <!-- Sol Menü / Navigasyon -->
+        <div class="guide-sidebar">
+          <div class="guide-sidebar-title">REHBERLER</div>
+          <div class="guide-nav-list" id="guide-nav-list">
+            <!-- Dinamik doldurulacak kategoriler ve konular -->
           </div>
         </div>
-        
-        <div class="code-preview">
-          <div class="code-header">
-            <span id="modal-filename">source.js</span>
-            <span class="dot-red"></span>
+        <!-- Sağ İçerik Alanı -->
+        <div class="guide-main">
+          <div class="guide-breadcrumb" id="guide-breadcrumb">AI Promptları &rsaquo; ChatGPT Promptları</div>
+          <h2 id="guide-modal-title" class="guide-title">ChatGPT Promptları</h2>
+          <div class="guide-body" id="guide-body">
+            <!-- Dinamik doldurulacak konu bölümleri, metinler ve kodlar -->
           </div>
-          <pre><code id="modal-code">console.log("init");</code></pre>
         </div>
       </div>
     </div>
