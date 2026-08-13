@@ -585,6 +585,11 @@
   <!-- 🎊 Konfeti Canvas -->
   <canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:99999; display:none;"></canvas>
 
+  <!-- Araç ikonlarını taşıyan balonlar: iletişim bölümüne yaklaşırken yükselir,
+       kartın üstünde patlar, ikonlar sayfanın altında birikir.
+       z-index 2: WebGL sahnesinin (1) önünde, sayfa içeriğinin arkasında. -->
+  <canvas id="balloon-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:2; display:none;"></canvas>
+
   <!-- Gizli admin erişimi: Logo'ya 7 kez hızlı tıkla -->
   <style>
     @keyframes secretCardIn {

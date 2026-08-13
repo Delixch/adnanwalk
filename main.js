@@ -239,6 +239,85 @@ const playHoverSound = () => {
   }
 };
 
+// Balloon burst: a very short filtered noise crack plus a fast downward chirp.
+// Detuning each one slightly stops a cluster of pops sounding like one machine.
+const playPopSound = (pitch = 1) => {
+  try {
+    if (!isSoundEnabled || !audioCtx) return;
+    const t = audioCtx.currentTime;
+
+    const burst = audioCtx.createBufferSource();
+    const len = Math.floor(audioCtx.sampleRate * 0.05);
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      // Exponential decay keeps it a crack rather than a hiss
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    }
+    burst.buffer = buf;
+
+    const burstFilter = audioCtx.createBiquadFilter();
+    burstFilter.type = 'bandpass';
+    burstFilter.frequency.setValueAtTime(1400 * pitch, t);
+    burstFilter.Q.setValueAtTime(0.8, t);
+
+    const burstGain = audioCtx.createGain();
+    burstGain.gain.setValueAtTime(0.16, t);
+    burstGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
+    burst.connect(burstFilter);
+    burstFilter.connect(burstGain);
+    burstGain.connect(masterGain);
+    burst.start(t);
+
+    const chirp = audioCtx.createOscillator();
+    chirp.type = 'sine';
+    chirp.frequency.setValueAtTime(760 * pitch, t);
+    chirp.frequency.exponentialRampToValueAtTime(180 * pitch, t + 0.07);
+
+    const chirpGain = audioCtx.createGain();
+    chirpGain.gain.setValueAtTime(0.07, t);
+    chirpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+
+    chirp.connect(chirpGain);
+    chirpGain.connect(masterGain);
+    chirp.start(t);
+    chirp.stop(t + 0.08);
+  } catch (e) {
+    console.warn("playPopSound failed:", e);
+  }
+};
+
+// Soft low thud for an icon settling onto the pile. Kept quiet and rate limited:
+// a dozen icons landing together would otherwise turn into a drum roll.
+let lastThudAt = 0;
+const playThudSound = () => {
+  try {
+    if (!isSoundEnabled || !audioCtx) return;
+
+    const now = performance.now();
+    if (now - lastThudAt < 90) return;
+    lastThudAt = now;
+
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, t);
+    osc.frequency.exponentialRampToValueAtTime(60, t + 0.12);
+
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0.05, t);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+
+    osc.connect(gainNode);
+    gainNode.connect(masterGain);
+    osc.start(t);
+    osc.stop(t + 0.15);
+  } catch (e) {
+    console.warn("playThudSound failed:", e);
+  }
+};
+
 // Toggle button logic
 window.addEventListener('DOMContentLoaded', () => {
   const soundToggleBtn = document.getElementById('sound-toggle');
@@ -1207,156 +1286,15 @@ const closeProjectDetails = () => {
   });
 };
 
-// --- 5D. 3D MEDYA GALERİSİ SALONU (ADNAN WALK) ---
-// We create 3 interactive floating digital screens in the new gallery segment
-const galleryGroup = new THREE.Group();
-galleryGroup.position.set(0, 0, -68); // Centered relative inside roomGroup (absolute Z = -113)
-roomGroup.add(galleryGroup);
-
-const galleryFrames = [];
-const frameWidth = 4.8;
-const frameHeight = 3.0;
-
-const frameGeo = new THREE.BoxGeometry(frameWidth, frameHeight, 0.15);
-const frameBorderGeo = new THREE.BoxGeometry(frameWidth + 0.3, frameHeight + 0.3, 0.1);
-
-// Position coordinates relative to galleryGroup
-const framePositions = [
-  { x: -4.8, y: 0.5, z: -8, rotY: Math.PI / 2.2, side: 'left' },   // Frame 1: Left wall
-  { x: 4.8, y: 0.5, z: 0, rotY: -Math.PI / 2.2, side: 'right' },  // Frame 2: Right wall
-  { x: -4.8, y: 0.5, z: 8, rotY: Math.PI / 2.2, side: 'left' }    // Frame 3: Left wall
-];
-
-framePositions.forEach((pos, idx) => {
-  const fGroup = new THREE.Group();
-  fGroup.position.set(pos.x, pos.y, pos.z);
-  fGroup.rotation.y = pos.rotY;
-  
-  // Neon border
-  const borderMat = new THREE.MeshStandardMaterial({
-    color: 0xf13024,
-    emissive: 0xf13024,
-    emissiveIntensity: 0.8,
-    roughness: 0.2,
-    metalness: 0.8
-  });
-  const border = new THREE.Mesh(frameBorderGeo, borderMat);
-  fGroup.add(border);
-  
-  // Screen/picture mesh (Placeholder grid)
-  const defaultCanvas = document.createElement('canvas');
-  defaultCanvas.width = 512;
-  defaultCanvas.height = 320;
-  const ctx = defaultCanvas.getContext('2d');
-  ctx.fillStyle = '#06020d';
-  ctx.fillRect(0, 0, 512, 320);
-  ctx.strokeStyle = 'rgba(241, 48, 36, 0.25)';
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 512; i += 32) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i, 320);
-    ctx.stroke();
-  }
-  for (let j = 0; j < 320; j += 32) {
-    ctx.beginPath();
-    ctx.moveTo(0, j);
-    ctx.lineTo(512, j);
-    ctx.stroke();
-  }
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('ADNAN WALK', 256, 140);
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.font = '16px sans-serif';
-  ctx.fillText('Medya Bekleniyor...', 256, 175);
-
-  const texture = new THREE.CanvasTexture(defaultCanvas);
-  const screenMat = new THREE.MeshBasicMaterial({
-    map: texture,
-    side: THREE.DoubleSide
-  });
-  const screen = new THREE.Mesh(frameGeo, screenMat);
-  screen.position.z = 0.05;
-  
-  // Raycast references
-  screen.userData = { isGalleryFrame: true, index: idx, mediaData: null };
-  fGroup.add(screen);
-  
-  galleryGroup.add(fGroup);
-  galleryFrames.push({ group: fGroup, screen: screen, texture: texture, defaultCanvas: defaultCanvas, border: border });
-});
+// --- 5D. ADNAN WALK MEDIA ---
+// The 3D wall frames that used to hang in this stretch of the corridor were
+// removed: they floated over the section content and read as stray cards next
+// to the contact form. The gallery lives entirely in the HTML hover component.
 
 // Cache for loaded media
 let currentMediaList = [];
 let activeCategory = 'image';
 
-// Update WebGL gallery textures
-const update3DGalleryTextures = (mediaList) => {
-  galleryFrames.forEach((frame, idx) => {
-    // Filter list for matching item
-    const item = mediaList[idx];
-    
-    // Stop any existing playing videos on this frame
-    if (frame.screen.userData.videoEl) {
-      try {
-        frame.screen.userData.videoEl.pause();
-        frame.screen.userData.videoEl.src = '';
-        frame.screen.userData.videoEl.load();
-      } catch(e){}
-      frame.screen.userData.videoEl = null;
-    }
-
-    if (item) {
-      frame.screen.userData.mediaData = item;
-      
-      if (item.type === 'image') {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = item.url;
-        img.onload = () => {
-          const tex = new THREE.Texture(img);
-          tex.needsUpdate = true;
-          frame.screen.material.map = tex;
-          frame.screen.material.needsUpdate = true;
-        };
-      } else if (item.type === 'video') {
-        const video = document.createElement('video');
-        video.crossOrigin = "anonymous";
-        video.src = item.url;
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.autoplay = true;
-        video.setAttribute('webkit-playsinline', 'true');
-        
-        video.addEventListener('canplaythrough', () => {
-          video.play().catch(e => console.log("Video autoplay blocked:", e));
-          const tex = new THREE.VideoTexture(video);
-          tex.minFilter = THREE.LinearFilter;
-          tex.magFilter = THREE.LinearFilter;
-          tex.format = THREE.RGBAFormat;
-          frame.screen.material.map = tex;
-          frame.screen.material.needsUpdate = true;
-        });
-        
-        frame.screen.userData.videoEl = video;
-      }
-      
-      // Turn border blue for videos, red for images
-      frame.border.material.color.setHex(item.type === 'video' ? 0xfbbf5a : 0xf13024);
-      frame.border.material.emissive.setHex(item.type === 'video' ? 0xfbbf5a : 0xf13024);
-    } else {
-      // Revert to placeholder canvas
-      frame.screen.userData.mediaData = null;
-      frame.screen.material.map = frame.texture;
-      frame.screen.material.needsUpdate = true;
-      frame.border.material.color.setHex(0xf13024);
-      frame.border.material.emissive.setHex(0xf13024);
-    }
-  });
-};
 
 // Admin state variables
 window.adnanIsAdmin = false;
@@ -1410,10 +1348,7 @@ const fetchMedia = async () => {
     const res = await fetch('/api/media');
     if (!res.ok) throw new Error("Failed to load");
     currentMediaList = await res.json();
-    
-    // Update WebGL textures with the first 3 items of the overall media list
-    update3DGalleryTextures(currentMediaList);
-    
+
     // Render the 2D grid items
     render2DGallery();
   } catch (err) {
@@ -2234,21 +2169,6 @@ const deleteMediaItem = async (id) => {
 // Initial media list download
 fetchMedia();
 
-// 3D Raycasting interactive hover and clicks for Gallery Frames
-window.addEventListener('click', () => {
-  if (isModalOpen || isTransitioning) return;
-  
-  raycaster.setFromCamera(mouse, camera);
-  const frameMeshes = galleryFrames.map(f => f.screen);
-  const intersects = raycaster.intersectObjects(frameMeshes);
-  
-  if (intersects.length > 0) {
-    const hitObj = intersects[0].object;
-    if (hitObj.userData && hitObj.userData.isGalleryFrame && hitObj.userData.mediaData) {
-      openLightbox(hitObj.userData.mediaData);
-    }
-  }
-});
 
 // Panel video layer — shown when Hyperion (idx 0) card is clicked
 const panelVideoLayer = document.getElementById('panel-video-layer');
@@ -2716,6 +2636,324 @@ sections.forEach((sec, idx) => {
 });
 
 
+// Respect the OS "reduce motion" setting. The scene, lights and colours stay; what
+// stops is the involuntary movement that causes trouble for vestibular disorders:
+// the camera swaying under the cursor, the continuous idle rotations, and the
+// balloon sequence below. Declared here because the balloon module reads it.
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+let prefersReducedMotion = reducedMotionQuery.matches;
+reducedMotionQuery.addEventListener('change', (e) => {
+  prefersReducedMotion = e.matches;
+  if (prefersReducedMotion) {
+    // Settle the camera back to centre rather than freezing it mid-sway
+    gsap.to(camera.position, { x: 0, y: 0, duration: 0.6, ease: 'power2.out' });
+    gsap.to(camera.rotation, { x: 0, y: 0, duration: 0.6, ease: 'power2.out' });
+  }
+});
+
+
+// --- 6B. TOOL BALLOONS OVER THE CONTACT OUTRO ---
+// Balloons carrying the icons of the tools this site is built with rise from
+// below while the visitor scrolls into the contact section, burst above the
+// contact card, and the freed icons drop and heap up along the bottom edge.
+//
+// This runs on its own 2D canvas rather than in the Three.js scene: the pile
+// needs to line up with the bottom of the viewport, which is a screen-space
+// idea, and keeping it out of the WebGL scene means it costs nothing on every
+// other section.
+const balloonCanvas = document.getElementById('balloon-canvas');
+
+// Each tool keeps its own brand colour on purpose. The site palette is three
+// colours, but these are recognisable logos rather than decoration, and a row of
+// identically coloured balloons would read as abstract shapes.
+const BALLOON_TOOLS = [
+  { label: 'JS', color: '#f7df1e', ink: '#1a1a1a' },
+  { label: 'TS', color: '#3178c6', ink: '#ffffff' },
+  { label: 'React', color: '#61dafb', ink: '#0b2a33' },
+  { label: 'Three', color: '#efefef', ink: '#111111' },
+  { label: 'GSAP', color: '#88ce02', ink: '#12210a' },
+  { label: 'HTML', color: '#e34f26', ink: '#ffffff' },
+  { label: 'CSS', color: '#1572b6', ink: '#ffffff' },
+  { label: 'Node', color: '#3c873a', ink: '#ffffff' },
+  { label: 'Vite', color: '#646cff', ink: '#ffffff' },
+  { label: 'Git', color: '#f05032', ink: '#ffffff' },
+  { label: 'npm', color: '#cb3837', ink: '#ffffff' },
+  { label: 'Figma', color: '#f24e1e', ink: '#ffffff' },
+  { label: 'VS Code', color: '#0098ff', ink: '#ffffff' },
+  { label: 'Docker', color: '#2496ed', ink: '#ffffff' }
+];
+
+if (balloonCanvas) {
+  const ctx = balloonCanvas.getContext('2d');
+
+  let balloons = [];
+  let sparks = [];
+  let fallingIcons = [];
+  let pile = [];
+  let running = false;
+  let rafId = null;
+  let spawnQueue = [];
+  let lastSpawnAt = 0;
+  let width = 0;
+  let height = 0;
+
+  // Icons rest in columns so the heap builds up unevenly instead of forming one
+  // flat line. Column width is roughly one icon wide.
+  const COLUMN_WIDTH = 74;
+  let columnHeights = [];
+
+  const resize = () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    // Draw at device resolution but keep the coordinate system in CSS pixels
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobileDevice ? 1.5 : 2);
+    balloonCanvas.width = Math.round(width * dpr);
+    balloonCanvas.height = Math.round(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    columnHeights = new Array(Math.ceil(width / COLUMN_WIDTH) + 1).fill(0);
+
+    // Rebuild the heap heights from whatever has already landed, otherwise a
+    // resize mid-sequence would let later icons stack straight through the pile.
+    pile.forEach(p => {
+      const col = columnFor(p.x);
+      columnHeights[col] += p.size * 0.78;
+      p.y = height - columnHeights[col] + p.size * 0.28;
+    });
+  };
+
+  const columnFor = (x) => Math.max(0, Math.min(columnHeights.length - 1, Math.floor(x / COLUMN_WIDTH)));
+
+  const resetSequence = () => {
+    balloons = [];
+    sparks = [];
+    fallingIcons = [];
+    pile = [];
+    columnHeights.fill(0);
+    // Shuffle so the order differs each time the visitor comes back
+    spawnQueue = BALLOON_TOOLS.slice().sort(() => Math.random() - 0.5);
+    lastSpawnAt = 0;
+  };
+
+  const spawnBalloon = (tool) => {
+    const radius = (isMobileDevice ? 26 : 34) + Math.random() * 10;
+    balloons.push({
+      tool,
+      x: 60 + Math.random() * Math.max(1, width - 120),
+      y: height + radius * 2.4,
+      radius,
+      rise: 0.9 + Math.random() * 0.75,
+      // Each balloon drifts on its own sine, so the group never moves in lockstep
+      swayPhase: Math.random() * Math.PI * 2,
+      swaySpeed: 0.6 + Math.random() * 0.7,
+      swayWidth: 12 + Math.random() * 22,
+      baseX: 0,
+      popped: false
+    });
+    balloons[balloons.length - 1].baseX = balloons[balloons.length - 1].x;
+  };
+
+  const popBalloon = (balloon) => {
+    balloon.popped = true;
+
+    // Smaller balloons crack a little higher
+    playPopSound(0.85 + (40 / balloon.radius) * 0.35);
+
+    for (let i = 0; i < 14; i++) {
+      const angle = (Math.PI * 2 * i) / 14 + Math.random() * 0.4;
+      const speed = 1.8 + Math.random() * 3.2;
+      sparks.push({
+        x: balloon.x,
+        y: balloon.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        color: balloon.tool.color
+      });
+    }
+
+    fallingIcons.push({
+      tool: balloon.tool,
+      x: balloon.x,
+      y: balloon.y,
+      vx: (Math.random() - 0.5) * 1.6,
+      vy: -1.5 - Math.random(), // thrown up briefly by the burst
+      size: balloon.radius * 0.95,
+      rotation: (Math.random() - 0.5) * 0.6,
+      spin: (Math.random() - 0.5) * 0.12
+    });
+  };
+
+  const drawBalloon = (b) => {
+    const r = b.radius;
+
+    // String
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(b.x, b.y + r * 1.15);
+    ctx.quadraticCurveTo(b.x + Math.sin(b.swayPhase * 2) * 8, b.y + r * 1.9, b.x, b.y + r * 2.6);
+    ctx.stroke();
+
+    // Body, slightly taller than wide like a real balloon
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.86, r, 0, 0, Math.PI * 2);
+    ctx.fillStyle = b.tool.color;
+    ctx.globalAlpha = 0.92;
+    ctx.fill();
+
+    // Knot
+    ctx.beginPath();
+    ctx.moveTo(-4, r * 0.98);
+    ctx.lineTo(4, r * 0.98);
+    ctx.lineTo(0, r * 1.2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Highlight
+    ctx.globalAlpha = 0.28;
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.3, -r * 0.35, r * 0.2, r * 0.3, -0.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = b.tool.ink;
+    ctx.font = `700 ${Math.round(r * 0.42)}px ${'Sora, sans-serif'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(b.tool.label, 0, 0);
+    ctx.restore();
+  };
+
+  const drawIconChip = (tool, x, y, size, rotation) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    const s = size;
+    const radius = s * 0.28;
+
+    ctx.beginPath();
+    ctx.moveTo(-s / 2 + radius, -s / 2);
+    ctx.arcTo(s / 2, -s / 2, s / 2, s / 2, radius);
+    ctx.arcTo(s / 2, s / 2, -s / 2, s / 2, radius);
+    ctx.arcTo(-s / 2, s / 2, -s / 2, -s / 2, radius);
+    ctx.arcTo(-s / 2, -s / 2, s / 2, -s / 2, radius);
+    ctx.closePath();
+    ctx.fillStyle = tool.color;
+    ctx.fill();
+
+    ctx.fillStyle = tool.ink;
+    ctx.font = `700 ${Math.round(s * 0.34)}px ${'Sora, sans-serif'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tool.label, 0, 0);
+    ctx.restore();
+  };
+
+  const step = () => {
+    ctx.clearRect(0, 0, width, height);
+
+    // Burst height: above the contact card, near the top third of the screen
+    const popLine = height * 0.26;
+    const now = performance.now();
+
+    // Feed balloons in gradually rather than all at once
+    if (spawnQueue.length && now - lastSpawnAt > 380) {
+      spawnBalloon(spawnQueue.shift());
+      lastSpawnAt = now;
+    }
+
+    balloons = balloons.filter(b => !b.popped);
+    balloons.forEach(b => {
+      b.y -= b.rise;
+      b.swayPhase += 0.016 * b.swaySpeed;
+      b.x = b.baseX + Math.sin(b.swayPhase) * b.swayWidth;
+      if (b.y <= popLine) popBalloon(b);
+      else drawBalloon(b);
+    });
+
+    sparks = sparks.filter(s => s.life > 0);
+    sparks.forEach(s => {
+      s.x += s.vx;
+      s.y += s.vy;
+      s.vy += 0.12;
+      s.life -= 0.035;
+      ctx.globalAlpha = Math.max(0, s.life);
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    fallingIcons = fallingIcons.filter(icon => {
+      icon.vy += 0.42;
+      icon.x += icon.vx;
+      icon.y += icon.vy;
+      icon.rotation += icon.spin;
+
+      const col = columnFor(icon.x);
+      const restY = height - columnHeights[col] - icon.size / 2 - 4;
+
+      if (icon.y >= restY) {
+        // Settle it into the heap and stop simulating it
+        columnHeights[col] += icon.size * 0.78;
+        pile.push({
+          tool: icon.tool,
+          x: icon.x,
+          y: restY,
+          size: icon.size,
+          rotation: icon.rotation * 0.35
+        });
+        playThudSound();
+        return false;
+      }
+
+      drawIconChip(icon.tool, icon.x, icon.y, icon.size, icon.rotation);
+      return true;
+    });
+
+    pile.forEach(p => drawIconChip(p.tool, p.x, p.y, p.size, p.rotation));
+
+    rafId = requestAnimationFrame(step);
+  };
+
+  const start = () => {
+    if (running || prefersReducedMotion) return;
+    running = true;
+    balloonCanvas.style.display = 'block';
+    resize();
+    resetSequence();
+    rafId = requestAnimationFrame(step);
+  };
+
+  const stop = () => {
+    if (!running) return;
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    ctx.clearRect(0, 0, width, height);
+    balloonCanvas.style.display = 'none';
+  };
+
+  window.addEventListener('resize', () => { if (running) resize(); });
+
+  // Runs while the contact section is approaching and on screen, and is torn
+  // down as soon as it leaves so nothing animates off screen.
+  ScrollTrigger.create({
+    trigger: '#contact',
+    start: 'top 90%',
+    end: 'bottom top',
+    onEnter: start,
+    onEnterBack: start,
+    onLeave: stop,
+    onLeaveBack: stop
+  });
+}
+
+
 // --- 7. ANIMATION RENDER LOOP ---
 const clock = new THREE.Clock();
 
@@ -2734,20 +2972,6 @@ const getMouse3D = (depth = 11) => {
 // slower cadence than the render itself.
 let frameCounter = 0;
 const linkRebuildInterval = isMobileDevice ? 3 : 2;
-
-// Respect the OS "reduce motion" setting. The scene, lights and colours stay; what
-// stops is the involuntary movement that causes trouble for vestibular disorders:
-// the camera swaying under the cursor and the continuous idle rotations.
-const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-let prefersReducedMotion = reducedMotionQuery.matches;
-reducedMotionQuery.addEventListener('change', (e) => {
-  prefersReducedMotion = e.matches;
-  if (prefersReducedMotion) {
-    // Settle the camera back to centre rather than freezing it mid-sway
-    gsap.to(camera.position, { x: 0, y: 0, duration: 0.6, ease: 'power2.out' });
-    gsap.to(camera.rotation, { x: 0, y: 0, duration: 0.6, ease: 'power2.out' });
-  }
-});
 
 const animate = () => {
   requestAnimationFrame(animate);
@@ -2931,64 +3155,42 @@ const animate = () => {
     segment.material.emissiveIntensity = 1.0 + Math.sin(elapsedTime * 2 + i) * 0.4;
   });
 
-  // D. Raycasting hover logic for project monoliths & gallery frames
+  // D. Raycasting hover logic for the project monoliths
   raycaster.setFromCamera(mouse, camera);
-  const frameMeshes = typeof galleryFrames !== 'undefined' ? galleryFrames.map(f => f.screen) : [];
-  const intersects = raycaster.intersectObjects([...monoliths, ...frameMeshes]);
+  const intersects = raycaster.intersectObjects(monoliths);
 
   if (intersects.length > 0) {
     const hitObj = intersects[0].object;
     if (hoveredMonolith !== hitObj) {
-      if (hoveredMonolith) {
+      if (hoveredMonolith && hoveredMonolith.children[1] && hoveredMonolith.children[1].material) {
         gsap.to(hoveredMonolith.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
-        if (hoveredMonolith.userData && hoveredMonolith.userData.isGalleryFrame) {
-          if (hoveredMonolith.parent && hoveredMonolith.parent.children[0] && hoveredMonolith.parent.children[0].material) {
-            gsap.to(hoveredMonolith.parent.children[0].material, { emissiveIntensity: 0.8, duration: 0.3 });
-          }
-        } else {
-          if (hoveredMonolith.children && hoveredMonolith.children[1] && hoveredMonolith.children[1].material) {
-            hoveredMonolith.children[1].material.opacity = 0.12;
-          }
-        }
+        hoveredMonolith.children[1].material.opacity = 0.12;
       }
+
       hoveredMonolith = hitObj;
-      const hoverScale = (hoveredMonolith.userData && hoveredMonolith.userData.isGalleryFrame) ? 1.08 : 1.15;
-      gsap.to(hoveredMonolith.scale, { x: hoverScale, y: hoverScale, z: hoverScale, duration: 0.3 });
-      
-      if (hoveredMonolith.userData && hoveredMonolith.userData.isGalleryFrame) {
-        if (hoveredMonolith.parent && hoveredMonolith.parent.children[0] && hoveredMonolith.parent.children[0].material) {
-          gsap.to(hoveredMonolith.parent.children[0].material, { emissiveIntensity: 2.2, duration: 0.3 });
-        }
-      } else {
-        if (hoveredMonolith.children && hoveredMonolith.children[1] && hoveredMonolith.children[1].material) {
-          hoveredMonolith.children[1].material.opacity = 0.45;
-        }
-        
-        // HTML selection follow (monoliths only)
-        htmlProjItems.forEach(item => {
-          if (hoveredMonolith.userData && parseInt(item.getAttribute('data-index')) === hoveredMonolith.userData.id) {
-            item.classList.add('active');
-          } else {
-            item.classList.remove('active');
-          }
-        });
+      gsap.to(hoveredMonolith.scale, { x: 1.15, y: 1.15, z: 1.15, duration: 0.3 });
+
+      if (hoveredMonolith.children && hoveredMonolith.children[1] && hoveredMonolith.children[1].material) {
+        hoveredMonolith.children[1].material.opacity = 0.45;
       }
+
+      // HTML selection follow
+      htmlProjItems.forEach(item => {
+        if (hoveredMonolith.userData && parseInt(item.getAttribute('data-index')) === hoveredMonolith.userData.id) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+
       playHoverSound();
     }
-  } else {
-    if (hoveredMonolith) {
-      gsap.to(hoveredMonolith.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
-      if (hoveredMonolith.userData && hoveredMonolith.userData.isGalleryFrame) {
-        if (hoveredMonolith.parent && hoveredMonolith.parent.children[0] && hoveredMonolith.parent.children[0].material) {
-          gsap.to(hoveredMonolith.parent.children[0].material, { emissiveIntensity: 0.8, duration: 0.3 });
-        }
-      } else {
-        if (hoveredMonolith.children && hoveredMonolith.children[1] && hoveredMonolith.children[1].material) {
-          hoveredMonolith.children[1].material.opacity = 0.12;
-        }
-      }
-      hoveredMonolith = null;
+  } else if (hoveredMonolith) {
+    gsap.to(hoveredMonolith.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
+    if (hoveredMonolith.children && hoveredMonolith.children[1] && hoveredMonolith.children[1].material) {
+      hoveredMonolith.children[1].material.opacity = 0.12;
     }
+    hoveredMonolith = null;
   }
 
   // Floating bounce effect for project panels
