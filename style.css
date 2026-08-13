@@ -1654,11 +1654,14 @@ header {
 .hover-gallery-3d {
   position: relative;
   width: 100%;
-  max-width: 1000px;
+  max-width: 820px;
   margin: 1.5rem auto 0 auto;
-  height: 44vh;
-  min-height: 260px;
-  max-height: 420px;
+  /* Kept short on purpose: the opened card takes its width from this height at
+     9:16, so a taller box would make the preview large rather than small. */
+  height: 38vh;
+  min-height: 240px;
+  max-height: 340px;
+  justify-content: center;
   background: radial-gradient(120% 100% at 50% 0%, #12070c 0%, #08070a 60%, #060409 100%);
   border-radius: 20px;
   overflow: hidden;
@@ -1742,9 +1745,13 @@ header {
   opacity: 0.55;
 }
 
+/* The opened preview is a small vertical card, not a wide panel: its width is
+   derived from the container height at 9:16, the shape the phone footage is
+   actually shot in. */
 .hg3d-strip.active,
 .hover-gallery-3d:not(.has-active) .hg3d-strip:hover {
-  flex: 35vw;
+  flex: 0 0 auto;
+  aspect-ratio: 9 / 16;
   filter: grayscale(0) brightness(1);
 }
 
@@ -1759,14 +1766,20 @@ header {
   top: 0; left: 0;
   width: 100%;
   height: 100%;
+  /* cover while the strip is a narrow sliver so it still reads as an image */
   object-fit: cover;
   pointer-events: none;
-  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: object-fit 0s;
 }
 
+/* Once opened, show the whole frame rather than a cropped centre. A landscape
+   photo letterboxes against the card's black ground instead of losing its edges. */
 .hg3d-strip.active img,
-.hg3d-strip.active video {
-  transform: scale(1.05);
+.hg3d-strip.active video,
+.hover-gallery-3d:not(.has-active) .hg3d-strip:hover img,
+.hover-gallery-3d:not(.has-active) .hg3d-strip:hover video {
+  object-fit: contain;
+  background: #000;
 }
 
 .hg3d-strip.neighbor-l {
@@ -1948,7 +1961,8 @@ header {
     transform: perspective(1500px) rotateY(-20deg) translateZ(-40px) !important;
   }
   .hg3d-strip.active {
-    flex: 55vw !important;
+    flex: 0 0 auto !important;
+    aspect-ratio: 9 / 16;
   }
   .hg3d-strip-info h4 { font-size: 0.9rem; }
   .hg3d-nav { width: 34px; height: 34px; font-size: 0.9rem; }

@@ -1211,14 +1211,9 @@ const render2DGallery = () => {
       strip.appendChild(img);
     }
 
-    // Info overlay
-    const info = document.createElement('div');
-    info.className = 'hg3d-strip-info';
-    info.innerHTML = `
-      <h4>${item.title}</h4>
-      ${item.location ? `<p>📍 ${item.location}</p>` : ''}
-    `;
-    strip.appendChild(info);
+    // No caption on the strip itself. The raw filename and the location covered
+    // the bottom of a small preview and told the visitor nothing they wanted at
+    // that point; both are shown in the lightbox once the item is opened.
 
     // Delete button (admin only)
     const delBtn = document.createElement('button');
@@ -1356,7 +1351,10 @@ const setHG3DActive = (idx, strips, container, dots) => {
 
     if (i === idx) {
       strip.classList.add('active');
-      strip.style.flex = `${HG3D_CONFIG.activeWidth}vw`;
+      // Width comes from the stylesheet's 9:16 rule, not from a viewport-width
+      // figure: the opened card has to stay a small vertical frame on every
+      // screen size. Clearing the inline value lets that rule apply.
+      strip.style.flex = '';
       strip.style.transform = `perspective(3500px) rotateY(0deg) translateZ(0px)`;
       strip.style.filter = 'grayscale(0) brightness(1)';
       strip.style.zIndex = '2';
