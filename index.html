@@ -139,6 +139,32 @@
               display: flex; align-items: center; justify-content: center;
               backdrop-filter: blur(8px);
             ">×</button>
+
+            <!-- İncele (Examine) Button Overlay -->
+            <button id="panel-video-examine-btn" onclick="openTeamDrawer()" style="
+              display: none;
+              position: absolute; bottom: 30px; left: 50%;
+              transform: translateX(-50%);
+              background: var(--primary-color);
+              border: 1px solid rgba(255, 255, 255, 0.25);
+              color: #ffffff;
+              font-family: var(--font-display);
+              font-weight: 800;
+              font-size: 0.95rem;
+              letter-spacing: 0.15rem;
+              padding: 0.8rem 2.2rem;
+              border-radius: 12px;
+              cursor: pointer;
+              z-index: 30;
+              align-items: center;
+              gap: 0.6rem;
+              box-shadow: 0 8px 25px rgba(76, 101, 253, 0.4);
+              transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            " onmouseover="this.style.transform='translateX(-50%) translateY(-2px) scale(1.05)';this.style.boxShadow='0 12px 35px rgba(76, 101, 253, 0.6)';"
+              onmouseout="this.style.transform='translateX(-50%)';this.style.boxShadow='0 8px 25px rgba(76, 101, 253, 0.4)';">
+              İNCELE
+              <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
           </div>
 
           <!-- Chaos Layer: görünür olduğunda paneli tamamen kaplar, çılgın yanıp sönen/bükülen ikonlar barındırır -->
@@ -437,6 +463,35 @@
                 </div>
               </div>
               <button class="project-link guide-examine-btn" data-guide="ai-projects" data-topic="ai-flow" aria-label="Kategoriyi İncele">
+                <span class="link-text">İNCELE</span>
+                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
+            <!-- 04: Kadro Tanıtım Sistemi -->
+            <div class="project-item" data-index="3" style="position: relative;">
+              <div class="project-info" style="width: 100%;">
+                <span class="num">04</span>
+                <h3 style="margin-top: 0.4rem; margin-bottom: 1.2rem; padding-right: 80px;">Kadro Tanıtım Sistemi</h3>
+                
+                <div class="guide-topics-list">
+                  <button class="guide-topic" data-guide="team-showcase" data-topic="team-ui">
+                    <span class="gt-num">04.1</span>
+                    <span class="gt-content">
+                      <span class="gt-title">3D Ekip Destesi</span>
+                      <span class="gt-summary">Arayüzde dikey yığılmış 3D derinlik algılı kart etkileşimi.</span>
+                    </span>
+                  </button>
+                  <button class="guide-topic" data-guide="team-showcase" data-topic="team-accordion">
+                    <span class="gt-num">04.2</span>
+                    <span class="gt-content">
+                      <span class="gt-title">Mobil Akordeon</span>
+                      <span class="gt-summary">Mobilde butonların hemen altına pürüzsüzce açılan panel.</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <button class="project-link guide-examine-btn" data-guide="team-showcase" data-topic="team-ui" aria-label="Kategoriyi İncele">
                 <span class="link-text">İNCELE</span>
                 <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
@@ -914,6 +969,76 @@
         }
       });
     })();
+  </script>
+
+  <!-- Yan Arayüz Drawer'ı (Slide-in Panel for Team page) -->
+  <div id="team-drawer" style="
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 650px;
+    max-width: 100vw;
+    height: 100vh;
+    background: #f4f8fa;
+    z-index: 10000;
+    box-shadow: -10px 0 45px rgba(8, 12, 30, 0.25);
+    transition: right 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex;
+    flex-direction: column;
+  ">
+    <!-- Header with close button -->
+    <div style="
+      padding: 1.2rem 2rem;
+      background: #080c1e;
+      color: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(76, 101, 253, 0.15);
+      box-shadow: 0 4px 20px rgba(8, 12, 30, 0.15);
+    ">
+      <h3 style="font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.1rem; color: #ffffff;">
+        3D ETKİLEŞİMLİ KADRO TANITIM SİSTEMİ
+      </h3>
+      <button onclick="closeTeamDrawer()" style="
+        background: none; border: none; color: #ffffff;
+        font-size: 2rem; cursor: pointer; line-height: 1;
+        transition: transform 0.2s;
+      " onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">&times;</button>
+    </div>
+    
+    <!-- Iframe rendering team.html -->
+    <iframe src="about:blank" id="team-drawer-iframe" style="
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #f4f8fa;
+    "></iframe>
+  </div>
+
+  <script>
+    window.openTeamDrawer = () => {
+      const drawer = document.getElementById('team-drawer');
+      const iframe = document.getElementById('team-drawer-iframe');
+      if (drawer && iframe) {
+        iframe.src = '/team.html';
+        drawer.style.right = '0';
+      }
+    };
+
+    window.closeTeamDrawer = () => {
+      const drawer = document.getElementById('team-drawer');
+      const iframe = document.getElementById('team-drawer-iframe');
+      if (drawer) {
+        drawer.style.right = '-100%';
+      }
+      setTimeout(() => {
+        if (drawer && drawer.style.right !== '0' && iframe) {
+          iframe.src = 'about:blank';
+        }
+      }, 600);
+    };
   </script>
 
   <script type="module" src="./main.js"></script>

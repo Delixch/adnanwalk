@@ -590,7 +590,7 @@
         <div class="cta-box">
           <h4>Kurulum & Entegrasyon Rehberi</h4>
           <p>Bu bileşeni kendi projelerinize nasıl entegre edeceğinizi öğrenmek için detaylı kurulum adımlarını inceleyin.</p>
-          <a href="#" class="cta-btn" onclick="alert('Kurulum dökümantasyonu sayfasına yönlendiriliyorsunuz...'); return false;">Kurulum Adımlarına Git →</a>
+          <a href="#" class="cta-btn" onclick="openSetupModal(); return false;">Kurulum Adımlarına Git →</a>
         </div>
       </div>
 
@@ -827,6 +827,134 @@
     window.addEventListener('resize', () => {
       selectMember(activeIndex >= 0 ? activeIndex : 0);
     });
+
+    // Modal Control Functions
+    window.openSetupModal = () => {
+      const modal = document.getElementById('setup-modal');
+      if (modal) modal.style.display = 'flex';
+    };
+
+    window.closeSetupModal = () => {
+      const modal = document.getElementById('setup-modal');
+      if (modal) modal.style.display = 'none';
+    };
   </script>
+
+  <!-- Kurulum Modalı (Self-contained inside team.html) -->
+  <div id="setup-modal" style="
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(8, 12, 30, 0.85);
+    backdrop-filter: blur(12px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  ">
+    <div style="
+      background: #ffffff;
+      border: 1px solid rgba(76, 101, 253, 0.2);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    ">
+      <!-- Modal Header -->
+      <div style="
+        padding: 1.5rem 2rem;
+        background: #080c1e;
+        color: #ffffff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      ">
+        <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 1.2rem;">KURULUM & ENTEGRASYON DÖKÜMANI</h3>
+        <button onclick="closeSetupModal()" style="
+          background: none; border: none; color: #ffffff;
+          font-size: 2.2rem; cursor: pointer; line-height: 1;
+        ">&times;</button>
+      </div>
+
+      <!-- Modal Body (Scrollable code view) -->
+      <div style="
+        padding: 2rem;
+        overflow-y: auto;
+        flex: 1;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        color: var(--text-main);
+      ">
+        <h4 style="margin-bottom: 0.5rem; color: var(--primary-color); font-weight: 700; font-size: 1.05rem;">1. Bağımlılıklar</h4>
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">
+          Bu bileşen sıfır harici kütüphane bağımlılığı ile çalışacak şekilde vanilya JavaScript ve CSS kullanılarak tasarlanmıştır. Herhangi bir ekstra kurulum gerektirmez.
+        </p>
+
+        <h4 style="margin-bottom: 0.5rem; color: var(--primary-color); font-weight: 700; font-size: 1.05rem;">2. HTML İskeleti</h4>
+        <p style="margin-bottom: 0.5rem; color: var(--text-muted);">Aşağıdaki HTML yapısını sayfanızda ekip bölümünü konumlandırmak istediğiniz alana yerleştirin:</p>
+        <div style="position: relative; margin-bottom: 1.5rem;">
+          <pre style="background: #080c1e; color: #a5b4fc; padding: 1.2rem; border-radius: 12px; overflow-x: auto; font-family: monospace; font-size: 0.75rem;">
+&lt;div class="team-grid"&gt;
+  &lt;!-- Sol Kısım: 3D Deste (Masaüstü) --&gt;
+  &lt;div class="deck-container"&gt;
+    &lt;div class="deck-wrapper"&gt;
+      &lt;div class="deck" id="card-deck"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="details-panel" id="details-panel"&gt;
+      &lt;h2 id="panel-name"&gt;&lt;/h2&gt;
+      &lt;span class="role-badge" id="panel-role"&gt;&lt;/span&gt;
+      &lt;p id="panel-desc"&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;!-- Sağ Kısım: Liste ve Mobil Akordeon --&gt;
+  &lt;div class="member-list" id="member-list"&gt;&lt;/div&gt;
+&lt;/div&gt;</pre>
+        </div>
+
+        <h4 style="margin-bottom: 0.5rem; color: var(--primary-color); font-weight: 700; font-size: 1.05rem;">3. CSS Entegrasyonu</h4>
+        <p style="margin-bottom: 0.5rem; color: var(--text-muted);">3D derinlik kart illüzyonu ve akordeon geçişleri için aşağıdaki CSS kurallarını ekleyin:</p>
+        <div style="position: relative; margin-bottom: 1.5rem;">
+          <pre style="background: #080c1e; color: #a5b4fc; padding: 1.2rem; border-radius: 12px; overflow-x: auto; font-family: monospace; font-size: 0.75rem;">
+.deck-wrapper {
+  perspective: 1200px;
+}
+.member-card {
+  position: absolute;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
+  transform-style: preserve-3d;
+}
+.mobile-accordion {
+  overflow: hidden;
+  height: 0;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.mobile-accordion.open {
+  height: auto;
+  opacity: 1;
+}</pre>
+        </div>
+
+        <h4 style="margin-bottom: 0.5rem; color: var(--primary-color); font-weight: 700; font-size: 1.05rem;">4. JavaScript Mantığı</h4>
+        <p style="margin-bottom: 0.5rem; color: var(--text-muted);">Kartların 3D eğim açısını (tilt) ve akordeon tetikleyicilerini yöneten JS kod yapısı:</p>
+        <div style="position: relative; margin-bottom: 1.5rem;">
+          <pre style="background: #080c1e; color: #a5b4fc; padding: 1.2rem; border-radius: 12px; overflow-x: auto; font-family: monospace; font-size: 0.75rem;">
+// 3D Eğim Hesaplama
+card.addEventListener('mousemove', (e) => {
+  const rect = card.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const rx = (y / rect.height - 0.5) * -18;
+  const ry = (x / rect.width - 0.5) * 18;
+  card.style.transform = `translate3d(${tx}px, ${ty}px, 0px) scale(${s}) rotateX(${rx}deg) rotateY(${ry}deg)`;
+});</pre>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

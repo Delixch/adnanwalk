@@ -1991,10 +1991,19 @@ if (panelVideoEl) {
   panelVideoEl.volume = 0;
 }
 
-const openPanelVideo = () => {
+const openPanelVideo = (srcUrl, showExamineBtn = false) => {
   if (!panelVideoLayer) return;
   panelVideoLayer.style.display = 'flex';
+  
+  const examineBtn = document.getElementById('panel-video-examine-btn');
+  if (examineBtn) {
+    examineBtn.style.display = showExamineBtn ? 'flex' : 'none';
+  }
+
   if (panelVideoEl) {
+    if (srcUrl && panelVideoEl.getAttribute('src') !== srcUrl) {
+      panelVideoEl.src = srcUrl;
+    }
     panelVideoEl.muted = !isSoundEnabled;
     panelVideoEl.volume = isSoundEnabled ? 1 : 0;
     panelVideoEl.currentTime = 0;
@@ -2228,11 +2237,18 @@ const handleProjectsPanelShift = (item, idx) => {
   projectsPanel.offsetHeight; // reflow
   projectsPanel.classList.add('update-glitch');
 
+  // Manage TikTok mode class
+  if (idx === 3) {
+    projectsPanel.classList.add('tiktok-mode');
+  } else {
+    projectsPanel.classList.remove('tiktok-mode');
+  }
+
   // Trigger contents based on card clicked
   if (idx === 0) {
     window.closePanelChaos();
     window.closePanelAI();
-    openPanelVideo();
+    openPanelVideo('https://res.cloudinary.com/ixyonosn/video/upload/v1786545431/s.mp4', false);
   } else if (idx === 1) {
     window.closePanelVideo();
     window.closePanelAI();
@@ -2241,6 +2257,10 @@ const handleProjectsPanelShift = (item, idx) => {
     window.closePanelVideo();
     window.closePanelChaos();
     openPanelAI();
+  } else if (idx === 3) {
+    window.closePanelChaos();
+    window.closePanelAI();
+    openPanelVideo('https://res.cloudinary.com/ixyonosn/video/upload/v1786731991/team.mp4', true);
   } else {
     window.closePanelVideo();
     window.closePanelChaos();
@@ -2252,14 +2272,19 @@ const handleProjectsPanelShift = (item, idx) => {
 htmlProjItems.forEach(item => {
   const idx = parseInt(item.getAttribute('data-index'));
 
-  // Wire up category INCELE button inside the card header. It opens the guide at
-  // the category's first topic, which is what its data attributes already name.
+  // Wire up category INCELE button inside the card header.
   const examineBtn = item.querySelector('.guide-examine-btn');
   if (examineBtn) {
     examineBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation(); // Stop card container click behavior (panel shift / video player)
-      window.openGuideModal(examineBtn.getAttribute('data-guide'), examineBtn.getAttribute('data-topic'));
+      e.stopPropagation(); // Stop card container click behavior
+      const guideId = examineBtn.getAttribute('data-guide');
+      const topicId = examineBtn.getAttribute('data-topic');
+      if (guideId === 'team-showcase') {
+        window.openTeamDrawer();
+      } else {
+        window.openGuideModal(guideId, topicId);
+      }
     });
   }
 
@@ -2268,10 +2293,14 @@ htmlProjItems.forEach(item => {
   topicBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation(); // Stop card container click behavior (panel shift / video player)
+      e.stopPropagation(); // Stop card container click behavior
       const guideId = btn.getAttribute('data-guide');
       const topicId = btn.getAttribute('data-topic');
-      window.openGuideModal(guideId, topicId);
+      if (guideId === 'team-showcase') {
+        window.openTeamDrawer();
+      } else {
+        window.openGuideModal(guideId, topicId);
+      }
     });
   });
 

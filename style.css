@@ -514,6 +514,16 @@ header {
 #projects-detail-panel {
   position: relative;
   transform: perspective(1200px) rotateY(24deg) rotateX(4deg);
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* TikTok Portrait video mode for vertical panels (like Kadro Tanıtım) */
+#projects-detail-panel.tiktok-mode {
+  flex: 0 0 auto !important;
+  width: 320px !important;
+  height: 569px !important;
+  max-width: 320px !important;
+  align-self: center;
 }
 
 .text-side {
