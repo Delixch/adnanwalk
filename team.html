@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Happy Beck - Unser Team</title>
+  <title>3D İnteraktif Kadro Tanıtım Sistemi</title>
   <!-- Google Fonts matching main site -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -119,7 +119,7 @@
     .hero h1 {
       font-family: var(--font-display);
       font-weight: 800;
-      font-size: 2.8rem;
+      font-size: 2.5rem;
       color: var(--bg-dark-blue);
       line-height: 1.15;
       margin-bottom: 1rem;
@@ -131,9 +131,9 @@
 
     .hero p {
       color: var(--text-muted);
-      max-width: 600px;
+      max-width: 650px;
       margin: 0 auto;
-      font-size: 1rem;
+      font-size: 0.95rem;
       line-height: 1.6;
     }
 
@@ -545,16 +545,16 @@
   <header>
     <a href="/index.html" class="back-link">
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Zurück
+      Geri Dön
     </a>
   </header>
 
   <div class="container">
     <!-- Hero Header -->
     <div class="hero">
-      <span class="badge">Das Herz von Happy Beck</span>
-      <h1>Unser <span>Team</span></h1>
-      <p>Hinter jedem Gipfeli und jedem frischen Brot stehen engagierte Menschen, die mit Herz und Handwerk arbeiten. Lernen Sie unser Team kennen.</p>
+      <span class="badge">Duyarlı Arayüz Bileşenleri</span>
+      <h1>3D Etkileşimli <span>Kadro Tanıtım Sistemi</span></h1>
+      <p>Masaüstü ekranlarda 3D derinlik algılı ve fare takip özellikli kart destesi (deck) etkileşimi, mobil cihazlarda ise dikey akordeon açılış modeli sunan yüksek performanslı dinamik personel tanıtım bileşeni.</p>
     </div>
 
     <!-- Main Grid Content -->
@@ -570,27 +570,27 @@
 
         <div class="details-panel" id="details-panel">
           <div class="panel-header">
-            <span class="panel-meta">Happy Beck Team Deck</span>
+            <span class="panel-meta">İnteraktif Personel Kartı</span>
             <span class="panel-counter" id="panel-counter">1 / 4</span>
           </div>
-          <h2 id="panel-name">Mitglied Name</h2>
-          <span class="role-badge" id="panel-role">Rolle</span>
-          <p id="panel-desc">Beschreibung des Teammitglieds...</p>
+          <h2 id="panel-name">Personel Adı</h2>
+          <span class="role-badge" id="panel-role">Pozisyon</span>
+          <p id="panel-desc">Personel açıklaması ve teknik uzmanlık detayları...</p>
         </div>
       </div>
 
       <!-- Column 2 (Right): List of Members (Desktop buttons, Mobile expands accordion) -->
       <div>
-        <div class="list-title">Team auswählen</div>
+        <div class="list-title">Personel Listesi</div>
         <div class="member-list" id="member-list">
           <!-- Populated dynamically via JS -->
         </div>
 
         <!-- Join Us CTA Box -->
         <div class="cta-box">
-          <h4>Werden Sie Teil unseres Teams</h4>
-          <p>Wir suchen immer motivierte Menschen, die unsere Leidenschaft teilen.</p>
-          <a href="#" class="cta-btn" onclick="alert('Bewerbungspage wird geladen...'); return false;">Offene Stellen ansehen →</a>
+          <h4>Kurulum & Entegrasyon Rehberi</h4>
+          <p>Bu bileşeni kendi projelerinize nasıl entegre edeceğinizi öğrenmek için detaylı kurulum adımlarını inceleyin.</p>
+          <a href="#" class="cta-btn" onclick="alert('Kurulum dökümantasyonu sayfasına yönlendiriliyorsunuz...'); return false;">Kurulum Adımlarına Git →</a>
         </div>
       </div>
 
@@ -602,30 +602,30 @@
     const members = [
       {
         id: "1",
-        name: "Adnan Aydin",
-        role: "Bäckermeister & Gründer",
-        description: "Gründer von Happy Beck. Mit über 20 Jahren Erfahrung im traditionellen Backhandwerk leitet er die Bäckerei mit Leidenschaft, Innovation und Liebe zum Detail.",
+        name: "Adnan Aydın",
+        role: "Yazılım Mimarı & Kurucu",
+        description: "20 yılı aşkın sektörel deneyimiyle projelerin mimari tasarımlarını koordine eden, yenilikçi arayüz mimarileri geliştiren ve sistem ölçeklenebilirliği üzerine çalışan kıdemli yazılım geliştirici.",
         image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=400&auto=format&fit=crop"
       },
       {
         id: "2",
-        name: "Eren Aydin",
-        role: "Chef-Pâtissier",
-        description: "Meister der süssen Kreationen. Eren leitet die Konditorei und entwirft unsere berühmten Pâtisserie-Spezialitäten mit aussergewöhnlicher handwerklicher Perfektion.",
+        name: "Eren Aydın",
+        role: "Kıdemli Arayüz Geliştirici",
+        description: "Kullanıcı deneyimini en üst seviyeye taşıyan 3D web etkileşimleri, pürüzsüz animasyonlar ve yüksek performanslı duyarlı arayüzler tasarlayan frontend uzmanı.",
         image: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=400&auto=format&fit=crop"
       },
       {
         id: "3",
         name: "Sarah Meier",
-        role: "Leiterin Verkauf",
-        description: "Das freundliche Gesicht am Morgen. Sarah sorgt mit ihrer herzlichen Art und Fachkompetenz dafür, dass sich jeder Kunde sofort wie zu Hause fühlt.",
+        role: "UX/UI Tasarımcısı",
+        description: "Kullanıcı odaklı dijital ürünler tasarlayan, estetik ve fonksiyonelliği bir araya getirerek modern görsel kimlikler oluşturan ve kullanılabilirlik testlerini yöneten tasarımcı.",
         image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"
       },
       {
         id: "4",
         name: "Thomas Keller",
-        role: "Bäckergeselle",
-        description: "Unser Spezialist für knusprige Baguettes, Zöpfe und feines Brot. Thomas steht jede Nacht in der Backstube, um die absolute Frische zu garantieren.",
+        role: "Full-Stack Geliştirici",
+        description: "Yüksek hızlı güvenli API servisleri, veritabanı optimizasyonları ve ilişkisel veritabanı senkronizasyonları kurgulayan, arka uç ve altyapı yönetimi uzmanı.",
         image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?q=80&w=400&auto=format&fit=crop"
       }
     ];
