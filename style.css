@@ -518,12 +518,26 @@ header {
 }
 
 /* TikTok Portrait video mode for vertical panels (like Kadro Tanıtım) */
-#projects-detail-panel.tiktok-mode {
-  flex: 0 0 auto !important;
-  width: 320px !important;
-  height: 569px !important;
-  max-width: 320px !important;
-  align-self: center;
+@media (min-width: 768px) {
+  #projects-detail-panel.tiktok-mode,
+  #skills-detail-panel.tiktok-mode {
+    flex: 0 0 auto !important;
+    width: 337px !important;
+    height: 600px !important;
+    max-width: 337px !important;
+    align-self: center;
+  }
+}
+
+@media (max-width: 767px) {
+  #projects-detail-panel.tiktok-mode,
+  #skills-detail-panel.tiktok-mode {
+    aspect-ratio: 9 / 16 !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+  }
 }
 
 .text-side {
