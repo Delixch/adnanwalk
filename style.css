@@ -296,11 +296,11 @@ header {
   gap: 1.5rem;
   padding: 1.8rem 0.9rem;
   border-radius: 50px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #8cdcf1; /* Highly visible light cyan background */
+  border: 1px solid rgba(8, 12, 30, 0.15);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 45px rgba(8, 12, 30, 0.25);
 }
 
 .floating-nav-item {
@@ -311,10 +311,10 @@ header {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: var(--text-color);
-  opacity: 0.5;
+  color: #080c1e; /* High contrast dark navy icons */
+  opacity: 0.7;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(8, 12, 30, 0.05);
   border: 1px solid transparent;
   transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -327,11 +327,11 @@ header {
 
 .floating-nav-item:hover, .floating-nav-item.active {
   opacity: 1;
-  color: var(--primary-color);
-  background: rgba(76, 101, 253, 0.1);
-  border-color: rgba(76, 101, 253, 0.3);
-  box-shadow: 0 0 15px rgba(76, 101, 253, 0.25);
-  transform: scale(1.08);
+  color: #94EAEF; /* Glowing light cyan icon on dark background */
+  background: #080c1e; /* Solid deep navy circular background */
+  border-color: rgba(148, 234, 239, 0.3);
+  box-shadow: 0 0 15px rgba(8, 12, 30, 0.3);
+  transform: scale(1.12);
 }
 
 /* Tooltip overlay for floating nav */
@@ -2345,19 +2345,20 @@ header {
     align-items: center;
     border-radius: 20px;
     padding: 0.5rem 0.4rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(8, 4, 15, 0.72);
+    border: 1px solid rgba(8, 12, 30, 0.15) !important;
+    background: #8cdcf1 !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 
-                inset 0 1px 0 rgba(255, 255, 255, 0.12),
-                0 0 15px rgba(76, 101, 253, 0.12);
+    box-shadow: 0 10px 35px rgba(8, 12, 30, 0.25) !important;
     z-index: 999 !important;
   }
   
   .floating-nav-item {
     margin: 0 !important;
     padding: 6px 10px;
+    color: #080c1e !important;
+    opacity: 0.7;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   }
   
   .floating-nav-item::after {
@@ -2367,6 +2368,13 @@ header {
   .floating-nav-item svg {
     width: 22px !important;
     height: 22px !important;
+  }
+
+  .floating-nav-item:hover, .floating-nav-item.active {
+    background: #080c1e !important;
+    color: #94EAEF !important;
+    opacity: 1 !important;
+    border-radius: 50%;
   }
 
   /* 3. Typography Adjustments to prevent wraps and text clip */
