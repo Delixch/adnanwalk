@@ -38,7 +38,7 @@ const showToast = (message, type = 'info', duration = 4000) => {
     error:   'linear-gradient(135deg,rgba(241,48,36,0.18),rgba(10,2,20,0.97))',
     info:    'linear-gradient(135deg,rgba(251,191,90,0.15),rgba(10,2,20,0.97))',
   };
-  const borders = { success: '#48c78e', error: '#f13024', info: '#fbbf5a' };
+  const borders = { success: '#48c78e', error: '#4C65FD', info: '#94EAEF' };
   toast.style.cssText = `
     position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(30px);
     background:${colors[type]||colors.info};
@@ -407,7 +407,7 @@ if (initialProjectsPanel) {
 
 
 // Add deep space fog to give a strong sense of distance and depth
-scene.fog = new THREE.FogExp2(0x030008, 0.018);
+scene.fog = new THREE.FogExp2(0x040816, 0.018);
 
 // Camera Group to enable dual-layered motion (scroll flight + mouse sway)
 const cameraGroup = new THREE.Group();
@@ -481,21 +481,21 @@ window.addEventListener('resize', () => {
 });
 
 // --- 2. LIGHTS (Brighter and more dynamic to highlight 3D volume) ---
-const ambientLight = new THREE.AmbientLight(0x180508, 1.2);
+const ambientLight = new THREE.AmbientLight(0x060e24, 1.2);
 scene.add(ambientLight);
 
 // Red neon point light
-const purpleLight = new THREE.PointLight(0xf13024, 20, 60);
+const purpleLight = new THREE.PointLight(0x4C65FD, 20, 60);
 purpleLight.position.set(-10, 5, 15);
 scene.add(purpleLight);
 
 // Orange neon point light
-const cyanLight = new THREE.PointLight(0xf97316, 20, 60);
+const cyanLight = new THREE.PointLight(0x94EAEF, 20, 60);
 cyanLight.position.set(10, -5, 15);
 scene.add(cyanLight);
 
 // Spotlight focused on the portal entrance (Crimson Red)
-const portalSpot = new THREE.SpotLight(0xf13024, 30, 45, Math.PI / 4, 0.5, 1);
+const portalSpot = new THREE.SpotLight(0x4C65FD, 30, 45, Math.PI / 4, 0.5, 1);
 portalSpot.position.set(0, 10, 20);
 scene.add(portalSpot);
 
@@ -521,7 +521,7 @@ const createStarTexture = () => {
   const ctx = c.getContext('2d');
   const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
   grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  grad.addColorStop(0.3, 'rgba(241, 48, 36, 0.85)'); // Red glow
+  grad.addColorStop(0.3, 'rgba(148, 234, 239, 0.85)'); // Red glow
   grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 16, 16);
@@ -611,8 +611,8 @@ for (let i = 0; i < tunnelSegmentCount; i++) {
   // Outer Diamond Arch
   const archGeo = new THREE.TorusGeometry(12, 0.12, 8, 4); // 4 segments makes it a diamond frame
   const archMat = new THREE.MeshStandardMaterial({
-    color: i % 2 === 0 ? 0xf13024 : 0xf97316, // Crimson and Orange
-    emissive: i % 2 === 0 ? 0x4a0408 : 0x4c1d05, // deep glowing hues
+    color: i % 2 === 0 ? 0x4C65FD : 0x94EAEF, // Crimson and Orange
+    emissive: i % 2 === 0 ? 0x091b4a : 0x093a4a, // deep glowing hues
     emissiveIntensity: 2.0,
     roughness: 0.1,
     metalness: 0.9
@@ -625,7 +625,7 @@ for (let i = 0; i < tunnelSegmentCount; i++) {
 
   // Floating side columns to anchor the floor
   const colGeo = new THREE.CylinderGeometry(0.15, 0.15, 20, 8);
-  const colMat = new THREE.MeshStandardMaterial({ color: 0x2a1210, metalness: 0.8, roughness: 0.2 });
+  const colMat = new THREE.MeshStandardMaterial({ color: 0x101b33, metalness: 0.8, roughness: 0.2 });
   
   const leftCol = new THREE.Mesh(colGeo, colMat);
   leftCol.position.set(-8.5, 0, zPos);
@@ -645,8 +645,8 @@ scene.add(portalGroup);
 // Circular portal frame
 const ringGeo = new THREE.TorusGeometry(6.2, 0.25, 16, 100);
 const ringMat = new THREE.MeshStandardMaterial({
-  color: 0xf97316, // Orange Portal Ring
-  emissive: 0xf97316,
+  color: 0x94EAEF, // Orange Portal Ring
+  emissive: 0x94EAEF,
   emissiveIntensity: 2.5,
   roughness: 0.1,
   metalness: 0.9
@@ -659,8 +659,8 @@ portalGroup.add(portalRing);
 // indistinguishable at this scale and costs a third of that.
 const swirlGeo = new THREE.TorusKnotGeometry(4.8, 0.2, isMobileDevice ? 80 : 120, isMobileDevice ? 12 : 16, 3, 4);
 const swirlMat = new THREE.MeshPhysicalMaterial({
-  color: 0xf13024, // Crimson Swirl
-  emissive: 0x3d0407,
+  color: 0x4C65FD, // Crimson Swirl
+  emissive: 0x091b4a,
   wireframe: true,
   transparent: true,
   opacity: 0.65,
@@ -684,7 +684,7 @@ portalGroup.add(rightHinge);
 
 // Highly reflective thick glass doors
 const doorMaterial = new THREE.MeshPhysicalMaterial({
-  color: 0x090518,
+  color: 0x050a1e,
   roughness: 0.05,
   metalness: 0.1,
   transmission: 0.7, // glass transparency
@@ -705,11 +705,11 @@ rightHinge.add(rightDoorMesh);
 
 // Glowing vertical energy bars on doors
 const stripeGeo = new THREE.BoxGeometry(0.12, doorHeight - 0.5, 0.08);
-const stripeLeft = new THREE.Mesh(stripeGeo, new THREE.MeshBasicMaterial({ color: 0xf97316 })); // Orange
+const stripeLeft = new THREE.Mesh(stripeGeo, new THREE.MeshBasicMaterial({ color: 0x94EAEF })); // Orange
 stripeLeft.position.set(doorWidth - 0.1, 0, doorDepth / 2 + 0.02);
 leftDoorMesh.add(stripeLeft);
 
-const stripeRight = new THREE.Mesh(stripeGeo, new THREE.MeshBasicMaterial({ color: 0xf13024 })); // Red
+const stripeRight = new THREE.Mesh(stripeGeo, new THREE.MeshBasicMaterial({ color: 0x4C65FD })); // Red
 stripeRight.position.set(-doorWidth + 0.1, 0, doorDepth / 2 + 0.02);
 rightDoorMesh.add(stripeRight);
 
@@ -720,21 +720,21 @@ roomGroup.position.set(0, 0, -45); // Centered at z = -45
 scene.add(roomGroup);
 
 // Solid Sci-fi Floor grid covering the corridor range
-const floorGrid1 = new THREE.GridHelper(60, 40, 0xf13024, 0x27070a); // Red Grid 1
+const floorGrid1 = new THREE.GridHelper(60, 40, 0x4C65FD, 0x27070a); // Red Grid 1
 floorGrid1.position.y = -8;
 floorGrid1.position.z = -10;
 floorGrid1.material.opacity = 0.35;
 floorGrid1.material.transparent = true;
 roomGroup.add(floorGrid1);
 
-const floorGrid2 = new THREE.GridHelper(60, 40, 0xf13024, 0x27070a); // Red Grid 2
+const floorGrid2 = new THREE.GridHelper(60, 40, 0x4C65FD, 0x27070a); // Red Grid 2
 floorGrid2.position.y = -8;
 floorGrid2.position.z = -70; // covers z = -40 to -100
 floorGrid2.material.opacity = 0.35;
 floorGrid2.material.transparent = true;
 roomGroup.add(floorGrid2);
 
-const floorGrid3 = new THREE.GridHelper(60, 40, 0xf13024, 0x27070a); // Red Grid 3
+const floorGrid3 = new THREE.GridHelper(60, 40, 0x4C65FD, 0x27070a); // Red Grid 3
 floorGrid3.position.y = -8;
 floorGrid3.position.z = -130; // covers z = -100 to -160
 floorGrid3.material.opacity = 0.35;
@@ -742,16 +742,16 @@ floorGrid3.material.transparent = true;
 roomGroup.add(floorGrid3);
 
 const projectsData = [
-  { color: 0xf13024, title: "Hyperion Engine", x: -5.5, y: 0.8, z: 22 }, // Red
-  { color: 0xf97316, title: "Neon Nexus", x: -7.0, y: -0.8, z: 12 },   // Orange
-  { color: 0xf97316, title: "Aether Spaces", x: -8.5, y: 1.2, z: 2 }    // Pink/Accent
+  { color: 0x4C65FD, title: "Hyperion Engine", x: -5.5, y: 0.8, z: 22 }, // Red
+  { color: 0x94EAEF, title: "Neon Nexus", x: -7.0, y: -0.8, z: 12 },   // Orange
+  { color: 0x94EAEF, title: "Aether Spaces", x: -8.5, y: 1.2, z: 2 }    // Pink/Accent
 ];
 
 const monoliths = [];
 projectsData.forEach((proj, idx) => {
   const monoGeo = new THREE.BoxGeometry(4.0, 5.8, 0.4);
   const monoMat = new THREE.MeshPhysicalMaterial({
-    color: 0x050212,
+    color: 0x030615,
     roughness: 0.1,
     metalness: 0.9,
     clearcoat: 1.0,
@@ -796,8 +796,8 @@ roomGroup.add(skillsGroup);
 // Big glowing skill core
 const coreSphereGeo = new THREE.SphereGeometry(1.6, 32, 32);
 const coreSphereMat = new THREE.MeshPhysicalMaterial({
-  color: 0xf97316, // Orange core
-  emissive: 0x3d1405,
+  color: 0x94EAEF, // Orange core
+  emissive: 0x093a4a,
   roughness: 0.05,
   metalness: 0.9,
   clearcoat: 1.0
@@ -814,8 +814,8 @@ for (let i = 0; i < nodeCount; i++) {
   const angle = (i / nodeCount) * Math.PI * 2;
   const radius = 4.2;
   const nodeMat = new THREE.MeshStandardMaterial({
-    color: i % 2 === 0 ? 0xf13024 : 0xf97316, // Red and Pink
-    emissive: i % 2 === 0 ? 0x3d0407 : 0x3d1405,
+    color: i % 2 === 0 ? 0x4C65FD : 0x94EAEF, // Red and Pink
+    emissive: i % 2 === 0 ? 0x091b4a : 0x093a4a,
     emissiveIntensity: 1.8,
     roughness: 0.2
   });
@@ -832,7 +832,7 @@ for (let i = 0; i < nodeCount; i++) {
   const points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(x, y, z)];
   const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
   const lineMat = new THREE.LineBasicMaterial({
-    color: i % 2 === 0 ? 0xf13024 : 0xf97316, // Red / Orange
+    color: i % 2 === 0 ? 0x4C65FD : 0x94EAEF, // Red / Orange
     transparent: true,
     opacity: 0.35
   });
@@ -848,8 +848,8 @@ roomGroup.add(contactGroup);
 
 const knotGeo = new THREE.TorusKnotGeometry(2.4, 0.7, 180, 16, 2, 5);
 const knotMat = new THREE.MeshStandardMaterial({
-  color: 0xf13024, // Crimson Red Knot
-  emissive: 0x4a0408,
+  color: 0x4C65FD, // Crimson Red Knot
+  emissive: 0x091b4a,
   roughness: 0.1,
   metalness: 0.95
 });
@@ -859,7 +859,7 @@ contactGroup.add(contactKnot);
 // Dynamic floating cage ring
 const outerRingGeo = new THREE.TorusGeometry(4.5, 0.08, 16, 100);
 const outerRingMat = new THREE.MeshBasicMaterial({
-  color: 0xf97316, // Orange outer rings
+  color: 0x94EAEF, // Orange outer rings
   transparent: true,
   opacity: 0.6
 });
@@ -2041,8 +2041,8 @@ const openPanelChaos = () => {
     el.style.left = `${Math.random() * 80}%`;
     el.style.top = `${Math.random() * 80}%`;
     el.style.fontSize = `${Math.random() * 20 + 20}px`;
-    el.style.color = Math.random() > 0.5 ? '#f13024' : '#fbbf5a';
-    el.style.textShadow = `0 0 10px ${Math.random() > 0.5 ? '#f13024' : '#fbbf5a'}`;
+    el.style.color = Math.random() > 0.5 ? '#4C65FD' : '#94EAEF';
+    el.style.textShadow = `0 0 10px ${Math.random() > 0.5 ? '#4C65FD' : '#94EAEF'}`;
     el.style.transition = 'left 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
     el.textContent = CHAOS_ICONS[Math.floor(Math.random() * CHAOS_ICONS.length)];
     
@@ -2066,7 +2066,7 @@ const openPanelChaos = () => {
         el.style.left = `${Math.random() * 85}%`;
         el.style.top = `${Math.random() * 85}%`;
         if (Math.random() > 0.7) {
-          el.style.color = Math.random() > 0.5 ? '#fbbf5a' : '#48c78e';
+          el.style.color = Math.random() > 0.5 ? '#94EAEF' : '#48c78e';
           el.style.fontSize = `${Math.random() * 20 + 20}px`;
         }
       }
@@ -2096,14 +2096,14 @@ let aiTimerId      = null;
 // Cycled through the three brand colours rather than each service's own brand,
 // so the rain stays inside the site's palette
 const AI_LIST = [
-  { name: 'CLAUDE.AI', url: 'claude.ai', color: '#fbbf5a' },
-  { name: 'CHATGPT.COM', url: 'chatgpt.com', color: '#f97316' },
-  { name: 'GEMINI.GOOGLE.COM', url: 'gemini.google', color: '#f13024' },
-  { name: 'DEEPSEEK.COM', url: 'deepseek.com', color: '#fbbf5a' },
-  { name: 'LLAMA.META.COM', url: 'llama.meta', color: '#f97316' },
-  { name: 'MIDJOURNEY.COM', url: 'midjourney.com', color: '#f13024' },
-  { name: 'V0.DEV', url: 'v0.dev', color: '#fbbf5a' },
-  { name: 'BOLT.NEW', url: 'bolt.new', color: '#f97316' }
+  { name: 'CLAUDE.AI', url: 'claude.ai', color: '#94EAEF' },
+  { name: 'CHATGPT.COM', url: 'chatgpt.com', color: '#618CF9' },
+  { name: 'GEMINI.GOOGLE.COM', url: 'gemini.google', color: '#4C65FD' },
+  { name: 'DEEPSEEK.COM', url: 'deepseek.com', color: '#94EAEF' },
+  { name: 'LLAMA.META.COM', url: 'llama.meta', color: '#618CF9' },
+  { name: 'MIDJOURNEY.COM', url: 'midjourney.com', color: '#4C65FD' },
+  { name: 'V0.DEV', url: 'v0.dev', color: '#94EAEF' },
+  { name: 'BOLT.NEW', url: 'bolt.new', color: '#618CF9' }
 ];
 
 const openPanelAI = () => {
@@ -2141,8 +2141,8 @@ const openPanelAI = () => {
     drop.style.animationDuration = `${Math.random() * 3 + 3.5}s`;
     
     const aiItem = AI_LIST[Math.floor(Math.random() * AI_LIST.length)];
-    drop.style.color = '#f97316'; // Matrix Green
-    drop.style.textShadow = '0 0 8px #f97316';
+    drop.style.color = '#618CF9'; // Matrix Green
+    drop.style.textShadow = '0 0 8px #618CF9';
     drop.style.fontSize = `${Math.random() * 0.25 + 0.65}rem`;
     
     // Construct vertical word column
@@ -2159,7 +2159,7 @@ const openPanelAI = () => {
       const idx = Math.floor(Math.random() * spawnedColumns.length);
       const col = spawnedColumns[idx];
       if (col && col.drop) {
-        col.drop.style.color = Math.random() > 0.7 ? '#ffffff' : '#f97316';
+        col.drop.style.color = Math.random() > 0.7 ? '#ffffff' : '#618CF9';
         if (Math.random() > 0.8) {
           const nextItem = AI_LIST[Math.floor(Math.random() * AI_LIST.length)];
           col.drop.textContent = nextItem.url.toUpperCase().split('').join('\n');
@@ -3146,8 +3146,8 @@ window.copyToClipboard = (text, btnId) => {
 
   const onSuccess = () => {
     btn.textContent = 'Kopyalandı ✓';
-    btn.style.color = '#fbbf5a'; // gold highlight
-    btn.style.borderColor = '#fbbf5a';
+    btn.style.color = '#94EAEF'; // gold highlight
+    btn.style.borderColor = '#94EAEF';
     setTimeout(() => {
       btn.textContent = 'Kopyala';
       btn.style.color = '';
