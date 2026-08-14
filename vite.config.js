@@ -59,6 +59,14 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       open: true
     },
+    build: {
+      rollupOptions: {
+        input: {
+          main: path.resolve('index.html'),
+          team: path.resolve('team.html')
+        }
+      }
+    },
     plugins: [
       {
         name: 'adnan-walk-api',

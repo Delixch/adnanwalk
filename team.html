@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Beck - Unser Team</title>
+  <!-- Google Fonts matching main site -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-light: #f4f8fa;
+      --bg-dark-blue: #080c1e;
+      --primary-color: #4C65FD;
+      --secondary-color: #618CF9;
+      --accent-color: #8cdcf1;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --card-bg: #ffffff;
+      --card-border: rgba(76, 101, 253, 0.12);
+      --font-display: 'Syne', sans-serif;
+      --font-sans: 'Sora', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: linear-gradient(135deg, #f4f8fa 0%, #eef5f9 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05rem;
+      padding: 0.6rem 1.2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(8, 12, 30, 0.04);
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .back-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(76, 101, 253, 0.15);
+      background: var(--primary-color);
+      color: #ffffff;
+    }
+
+    .back-link svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 5rem 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      background: rgba(76, 101, 253, 0.08);
+      color: var(--primary-color);
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 0.15rem;
+      text-transform: uppercase;
+      border-radius: 50px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(76, 101, 253, 0.05);
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 2.8rem;
+      color: var(--bg-dark-blue);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 span {
+      color: var(--primary-color);
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    /* Grid Layout */
+    .team-grid {
+      display: grid;
+      grid-template-cols: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    /* Left Column: 3D Stack and Details */
+    .deck-container {
+      position: sticky;
+      top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .deck-wrapper {
+      position: relative;
+      width: 200px;
+      height: 260px;
+      margin: 0 auto;
+      perspective: 1200px;
+    }
+
+    .deck {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+
+    .member-card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(8, 12, 30, 0.15);
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
+      cursor: pointer;
+      user-select: none;
+      transform-style: preserve-3d;
+    }
+
+    .member-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    .member-card .placeholder-img {
+      width: 100%;
+      height: 100%;
+      background: var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .member-card .placeholder-img svg {
+      width: 64px;
+      height: 64px;
+    }
+
+    /* Card Reflection Shine */
+    .card-shine {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    /* Active Details Panel */
+    .details-panel {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 2rem;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 10px 30px rgba(8, 12, 30, 0.04);
+      transition: all 0.4s ease;
+      animation: detailsFadeIn 0.5s ease;
+    }
+
+    @keyframes detailsFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .panel-meta {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.15rem;
+      text-transform: uppercase;
+    }
+
+    .panel-counter {
+      background: rgba(76, 101, 253, 0.08);
+      color: var(--primary-color);
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    .details-panel h2 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--bg-dark-blue);
+      margin-bottom: 0.5rem;
+      font-weight: 800;
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      background: var(--primary-color);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.65rem;
+      letter-spacing: 0.05rem;
+      text-transform: uppercase;
+      border-radius: 8px;
+      margin-bottom: 1.2rem;
+    }
+
+    .details-panel p {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: var(--text-muted);
+    }
+
+    /* Right Column: Member list buttons */
+    .member-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .list-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.15rem;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .list-btn {
+      width: 100%;
+      text-align: left;
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      box-shadow: 0 4px 12px rgba(8, 12, 30, 0.02);
+    }
+
+    .list-btn-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+
+    .list-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(76, 101, 253, 0.2);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .list-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .list-role {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      flex-shrink: 0;
+      transition: color 0.3s;
+    }
+
+    /* Button hover & active */
+    .list-btn:hover {
+      transform: translateX(6px);
+      border-color: rgba(76, 101, 253, 0.3);
+      box-shadow: 0 6px 18px rgba(76, 101, 253, 0.08);
+    }
+
+    .list-btn.active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(76, 101, 253, 0.25);
+      transform: translateX(8px);
+    }
+
+    .list-btn.active .list-dot {
+      background: #ffffff;
+    }
+
+    .list-btn.active .list-role {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Inline mobile details inside list (Accordion) */
+    .mobile-accordion {
+      display: none;
+      overflow: hidden;
+      height: 0;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .mobile-accordion.open {
+      height: auto;
+      opacity: 1;
+      margin-top: 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .accordion-inner {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.2rem;
+      display: flex;
+      gap: 1rem;
+      box-shadow: inset 0 2px 8px rgba(8, 12, 30, 0.03);
+    }
+
+    .accordion-img-wrapper {
+      width: 90px;
+      height: 120px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      flex-shrink: 0;
+    }
+
+    .accordion-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .accordion-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .accordion-info h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      color: var(--bg-dark-blue);
+      margin-bottom: 0.25rem;
+      font-weight: 800;
+    }
+
+    .accordion-info .mobile-role {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      background: rgba(76, 101, 253, 0.08);
+      color: var(--primary-color);
+      font-weight: 700;
+      font-size: 0.6rem;
+      letter-spacing: 0.05rem;
+      text-transform: uppercase;
+      border-radius: 6px;
+      margin-bottom: 0.6rem;
+    }
+
+    .accordion-info p {
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+
+    /* Join CTA Box */
+    .cta-box {
+      margin-top: 2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 1.8rem;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(8, 12, 30, 0.03);
+    }
+
+    .cta-box h4 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--bg-dark-blue);
+      margin-bottom: 0.4rem;
+    }
+
+    .cta-box p {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      margin-bottom: 1.2rem;
+    }
+
+    .cta-btn {
+      display: block;
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--primary-color);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05rem;
+      border-radius: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(76, 101, 253, 0.15);
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(76, 101, 253, 0.25);
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .team-grid {
+        grid-template-cols: 1fr;
+        gap: 2rem;
+      }
+
+      /* On mobile/tablet, hide the left 3D Card Deck panel entirely */
+      .deck-container {
+        display: none;
+      }
+
+      /* Show Accordion inside buttons list */
+      .mobile-accordion {
+        display: block;
+      }
+
+      .list-btn:hover {
+        transform: none;
+      }
+
+      .list-btn.active {
+        transform: none;
+        background: var(--primary-color);
+      }
+    }
+
+    @media (max-width: 576px) {
+      .hero h1 {
+        font-size: 2.1rem;
+      }
+
+      .hero p {
+        font-size: 0.85rem;
+      }
+
+      .accordion-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .accordion-img-wrapper {
+        width: 120px;
+        height: 160px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/index.html" class="back-link">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Zurück
+    </a>
+  </header>
+
+  <div class="container">
+    <!-- Hero Header -->
+    <div class="hero">
+      <span class="badge">Das Herz von Happy Beck</span>
+      <h1>Unser <span>Team</span></h1>
+      <p>Hinter jedem Gipfeli und jedem frischen Brot stehen engagierte Menschen, die mit Herz und Handwerk arbeiten. Lernen Sie unser Team kennen.</p>
+    </div>
+
+    <!-- Main Grid Content -->
+    <div class="team-grid">
+      
+      <!-- Column 1 (Left): 3D Deck and Active Panel (Desktop Only) -->
+      <div class="deck-container">
+        <div class="deck-wrapper">
+          <div class="deck" id="card-deck">
+            <!-- Cards populated dynamically via JavaScript -->
+          </div>
+        </div>
+
+        <div class="details-panel" id="details-panel">
+          <div class="panel-header">
+            <span class="panel-meta">Happy Beck Team Deck</span>
+            <span class="panel-counter" id="panel-counter">1 / 4</span>
+          </div>
+          <h2 id="panel-name">Mitglied Name</h2>
+          <span class="role-badge" id="panel-role">Rolle</span>
+          <p id="panel-desc">Beschreibung des Teammitglieds...</p>
+        </div>
+      </div>
+
+      <!-- Column 2 (Right): List of Members (Desktop buttons, Mobile expands accordion) -->
+      <div>
+        <div class="list-title">Team auswählen</div>
+        <div class="member-list" id="member-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Join Us CTA Box -->
+        <div class="cta-box">
+          <h4>Werden Sie Teil unseres Teams</h4>
+          <p>Wir suchen immer motivierte Menschen, die unsere Leidenschaft teilen.</p>
+          <a href="#" class="cta-btn" onclick="alert('Bewerbungspage wird geladen...'); return false;">Offene Stellen ansehen →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Mock Team Members Database
+    const members = [
+      {
+        id: "1",
+        name: "Adnan Aydin",
+        role: "Bäckermeister & Gründer",
+        description: "Gründer von Happy Beck. Mit über 20 Jahren Erfahrung im traditionellen Backhandwerk leitet er die Bäckerei mit Leidenschaft, Innovation und Liebe zum Detail.",
+        image: "https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=400&auto=format&fit=crop"
+      },
+      {
+        id: "2",
+        name: "Eren Aydin",
+        role: "Chef-Pâtissier",
+        description: "Meister der süssen Kreationen. Eren leitet die Konditorei und entwirft unsere berühmten Pâtisserie-Spezialitäten mit aussergewöhnlicher handwerklicher Perfektion.",
+        image: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=400&auto=format&fit=crop"
+      },
+      {
+        id: "3",
+        name: "Sarah Meier",
+        role: "Leiterin Verkauf",
+        description: "Das freundliche Gesicht am Morgen. Sarah sorgt mit ihrer herzlichen Art und Fachkompetenz dafür, dass sich jeder Kunde sofort wie zu Hause fühlt.",
+        image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop"
+      },
+      {
+        id: "4",
+        name: "Thomas Keller",
+        role: "Bäckergeselle",
+        description: "Unser Spezialist für knusprige Baguettes, Zöpfe und feines Brot. Thomas steht jede Nacht in der Backstube, um die absolute Frische zu garantieren.",
+        image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?q=80&w=400&auto=format&fit=crop"
+      }
+    ];
+
+    let activeIndex = 0;
+    const totalMembers = members.length;
+
+    const cardDeck = document.getElementById('card-deck');
+    const memberList = document.getElementById('member-list');
+    const panelCounter = document.getElementById('panel-counter');
+    const panelName = document.getElementById('panel-name');
+    const panelRole = document.getElementById('panel-role');
+    const panelDesc = document.getElementById('panel-desc');
+
+    // Build the Right List Elements (Buttons & Mobile Accordions)
+    function buildList() {
+      memberList.innerHTML = '';
+      members.forEach((member, index) => {
+        // Create container for button + accordion
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+
+        // Create Button
+        const btn = document.createElement('button');
+        btn.className = `list-btn ${index === activeIndex ? 'active' : ''}`;
+        btn.dataset.index = index;
+        btn.innerHTML = `
+          <span class="list-btn-left">
+            <span class="list-dot"></span>
+            <span class="list-name">${member.name}</span>
+          </span>
+          <span class="list-role">${member.role}</span>
+        `;
+
+        // Create Accordion Div (Mobile Only)
+        const accordion = document.createElement('div');
+        accordion.className = `mobile-accordion ${index === activeIndex ? 'open' : ''}`;
+        accordion.id = `accordion-${index}`;
+        accordion.innerHTML = `
+          <div class="accordion-inner">
+            <div class="accordion-img-wrapper">
+              <img src="${member.image}" alt="${member.name}">
+            </div>
+            <div class="accordion-info">
+              <h3>${member.name}</h3>
+              <span class="mobile-role">${member.role}</span>
+              <p>${member.description}</p>
+            </div>
+          </div>
+        `;
+
+        btn.addEventListener('click', () => {
+          selectMember(index);
+        });
+
+        container.appendChild(btn);
+        container.appendChild(accordion);
+        memberList.appendChild(container);
+      });
+    }
+
+    // Build Left 3D Cards
+    function buildCards() {
+      cardDeck.innerHTML = '';
+      members.forEach((member, index) => {
+        const card = document.createElement('div');
+        card.className = 'member-card';
+        card.id = `card-${index}`;
+        card.innerHTML = `
+          <div class="card-shine"></div>
+          <img src="${member.image}" alt="${member.name}">
+        `;
+
+        card.addEventListener('click', () => {
+          selectMember(index);
+        });
+
+        // 3D Mouse Movement on Active Card
+        card.addEventListener('mousemove', (e) => {
+          if (index !== activeIndex) return;
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const rx = (y / rect.height - 0.5) * -18;
+          const ry = (x / rect.width - 0.5) * 18;
+          
+          const transforms = getCardTransforms(index);
+          card.style.transform = `translate3d(${transforms.x}px, ${transforms.y}px, 0px) scale(${transforms.scale}) rotateX(${rx}deg) rotateY(${ry}deg)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+          if (index !== activeIndex) return;
+          const transforms = getCardTransforms(index);
+          card.style.transform = `translate3d(${transforms.x}px, ${transforms.y}px, 0px) scale(${transforms.scale}) rotateX(0deg) rotateY(0deg)`;
+        });
+
+        cardDeck.appendChild(card);
+      });
+      updateCardPositions();
+    }
+
+    // Calculate Stack Position offsets
+    function getCardTransforms(index) {
+      const offset = (index - activeIndex + totalMembers) % totalMembers;
+      let x = 0, y = 0, scale = 1, opacity = 1, zIndex = totalMembers - offset;
+
+      if (offset === 0) {
+        x = 0; y = 0; scale = 1; opacity = 1;
+      } else if (offset === 1) {
+        x = -12; y = -11; scale = 0.94; opacity = 0.75;
+      } else if (offset === 2) {
+        x = -22; y = -20; scale = 0.88; opacity = 0.5;
+      } else {
+        x = -30; y = -28; scale = 0.82; opacity = 0.25;
+      }
+
+      return { x, y, scale, opacity, zIndex };
+    }
+
+    // Update positions & scales in the DOM
+    function updateCardPositions() {
+      members.forEach((_, index) => {
+        const card = document.getElementById(`card-${index}`);
+        if (!card) return;
+        const trans = getCardTransforms(index);
+        card.style.transform = `translate3d(${trans.x}px, ${trans.y}px, 0px) scale(${trans.scale})`;
+        card.style.opacity = trans.opacity;
+        card.style.zIndex = trans.zIndex;
+      });
+    }
+
+    // Select member and animate active elements
+    function selectMember(index) {
+      const isMobile = window.innerWidth < 1024;
+      
+      // If mobile and clicked active, collapse accordion
+      if (isMobile && activeIndex === index) {
+        const activeAccordion = document.getElementById(`accordion-${activeIndex}`);
+        const activeBtn = document.querySelector(`.list-btn[data-index="${activeIndex}"]`);
+        if (activeAccordion && activeAccordion.classList.contains('open')) {
+          activeAccordion.classList.remove('open');
+          if (activeBtn) activeBtn.classList.remove('active');
+          activeIndex = -1; // Deselect
+          return;
+        }
+      }
+
+      // Update activeIndex
+      activeIndex = index;
+
+      // Update Button Classes
+      document.querySelectorAll('.list-btn').forEach((btn, idx) => {
+        if (idx === index) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      // Update Accordions on Mobile
+      document.querySelectorAll('.mobile-accordion').forEach((acc, idx) => {
+        if (idx === index) acc.classList.add('open');
+        else acc.classList.remove('open');
+      });
+
+      // Smooth scroll row to top on mobile
+      if (isMobile) {
+        const btn = document.querySelector(`.list-btn[data-index="${index}"]`);
+        if (btn) {
+          setTimeout(() => {
+            btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }
+      }
+
+      // Update Desktop Details Panel (Fades text in and out)
+      if (!isMobile) {
+        const member = members[index];
+        panelCounter.textContent = `${index + 1} / ${totalMembers}`;
+        
+        // Brief text-fade effect
+        const details = document.getElementById('details-panel');
+        details.style.animation = 'none';
+        details.offsetHeight; // force reflow
+        details.style.animation = 'detailsFadeIn 0.4s ease';
+
+        panelName.textContent = member.name;
+        panelRole.textContent = member.role;
+        panelDesc.textContent = member.description;
+
+        updateCardPositions();
+      }
+    }
+
+    // Initialize Page
+    buildList();
+    buildCards();
+    selectMember(0);
+
+    // Dynamic resize safety
+    window.addEventListener('resize', () => {
+      selectMember(activeIndex >= 0 ? activeIndex : 0);
+    });
+  </script>
+</body>
+</html>
