@@ -2394,8 +2394,8 @@ if (projectDeck) {
 const skillCards = document.querySelectorAll('.skill-card');
 const skillDataList = [
   {
-    title: "Three.js / WebGL",
-    desc: "Özel vertex/fragment shader gölgelendiricileri yazma, GPU tabanlı parçacık sistemleri oluşturma, 3D koordinat projeksiyonları ve vektör-matris dönüşümleri ile tarayıcı sınırlarını zorlayan gerçek zamanlı sahneler tasarlama."
+    title: "Kadro Tanıtım Sistemi",
+    desc: "Masaüstü ekranlarda fare hareketini takip eden 3D perspektif kaymalı kart yığını derinlik illüzyonu sunan, mobil cihazlarda ise pürüzsüz akordeon yapısıyla açılan yüksek performanslı, duyarlı bir personel tanıtım arayüzü."
   },
   {
     title: "GSAP Animasyon",
