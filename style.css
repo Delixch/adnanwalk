@@ -144,12 +144,12 @@ header {
 .skills-content {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  gap: 3.5rem;
+  gap: 1rem;
 }
 
 .skills-content .text-side.right-aligned {
@@ -159,8 +159,8 @@ header {
 }
 
 .skills-detail-panel {
-  flex: 0 0 42%;
-  max-width: 440px;
+  flex: 0 0 44%;
+  max-width: 470px;
   min-height: 520px;
   padding: 2.2rem;
   background: rgba(10, 4, 20, 0.95); /* Opaque dark glass look that runs at 60 FPS without GPU lag */
@@ -492,12 +492,12 @@ header {
 .projects-content {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  gap: 3.5rem;
+  gap: 1rem;
 }
 
 .projects-content .text-side.right-aligned {
@@ -507,8 +507,8 @@ header {
 }
 
 .projects-content > .skills-detail-panel {
-  flex: 0 0 42%;
-  max-width: 440px;
+  flex: 0 0 44%;
+  max-width: 470px;
 }
 
 #projects-detail-panel {
