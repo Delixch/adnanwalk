@@ -342,6 +342,11 @@ window.addEventListener('DOMContentLoaded', () => {
           panelVideoEl.muted = true;
           panelVideoEl.volume = 0;
         }
+        const skillsVideoEl = document.getElementById('skills-video-el');
+        if (skillsVideoEl) {
+          skillsVideoEl.muted = true;
+          skillsVideoEl.volume = 0;
+        }
 
         // Mute lightbox video if active
         if (lightboxMediaContainer) {
@@ -364,6 +369,11 @@ window.addEventListener('DOMContentLoaded', () => {
         if (panelVideoEl) {
           panelVideoEl.muted = false;
           panelVideoEl.volume = 1;
+        }
+        const skillsVideoEl = document.getElementById('skills-video-el');
+        if (skillsVideoEl) {
+          skillsVideoEl.muted = false;
+          skillsVideoEl.volume = 1;
         }
 
         // Unmute lightbox video if active
@@ -2025,6 +2035,42 @@ if (panelVideoEl) {
   });
 }
 
+// Skills Video Layer controls (TikTok mode showcase)
+const skillsVideoLayer = document.getElementById('skills-video-layer');
+const skillsVideoEl    = document.getElementById('skills-video-el');
+
+if (skillsVideoEl) {
+  skillsVideoEl.muted = true;
+  skillsVideoEl.volume = 0;
+}
+
+window.openSkillsVideo = (srcUrl) => {
+  if (!skillsVideoLayer) return;
+  skillsVideoLayer.style.display = 'flex';
+  if (skillsVideoEl) {
+    if (srcUrl && skillsVideoEl.getAttribute('src') !== srcUrl) {
+      skillsVideoEl.src = srcUrl;
+    }
+    skillsVideoEl.muted = !isSoundEnabled;
+    skillsVideoEl.volume = isSoundEnabled ? 1 : 0;
+    skillsVideoEl.currentTime = 0;
+    skillsVideoEl.play().catch(() => {});
+  }
+};
+
+window.closeSkillsVideo = () => {
+  if (!skillsVideoLayer) return;
+  skillsVideoLayer.style.display = 'none';
+  if (skillsVideoEl) skillsVideoEl.pause();
+};
+
+if (skillsVideoEl) {
+  skillsVideoEl.addEventListener('click', () => {
+    if (skillsVideoEl.paused) skillsVideoEl.play().catch(() => {});
+    else skillsVideoEl.pause();
+  });
+}
+
 // ===== CHAOS PANEL ENGINE =====
 const panelChaosLayer = document.getElementById('panel-chaos-layer');
 const chaosContainer  = document.getElementById('chaos-container');
@@ -2237,13 +2283,6 @@ const handleProjectsPanelShift = (item, idx) => {
   projectsPanel.offsetHeight; // reflow
   projectsPanel.classList.add('update-glitch');
 
-  // Manage TikTok mode class
-  if (idx === 3) {
-    projectsPanel.classList.add('tiktok-mode');
-  } else {
-    projectsPanel.classList.remove('tiktok-mode');
-  }
-
   // Trigger contents based on card clicked
   if (idx === 0) {
     window.closePanelChaos();
@@ -2257,10 +2296,6 @@ const handleProjectsPanelShift = (item, idx) => {
     window.closePanelVideo();
     window.closePanelChaos();
     openPanelAI();
-  } else if (idx === 3) {
-    window.closePanelChaos();
-    window.closePanelAI();
-    openPanelVideo('https://res.cloudinary.com/ixyonosn/video/upload/v1786731991/team.mp4', true);
   } else {
     window.closePanelVideo();
     window.closePanelChaos();
@@ -2380,6 +2415,25 @@ const skillsPanel = document.getElementById('skills-detail-panel');
 const skillsPanelTitle = document.getElementById('skills-panel-title');
 const skillsPanelDesc = document.getElementById('skills-panel-desc');
 
+const handleSkillsVideoToggle = (idx) => {
+  const skillsPanel = document.getElementById('skills-detail-panel');
+  if (!skillsPanel) return;
+
+  if (idx === 0) {
+    skillsPanel.classList.add('tiktok-mode');
+    window.openSkillsVideo('https://res.cloudinary.com/ixyonosn/video/upload/v1786731991/team.mp4');
+  } else {
+    skillsPanel.classList.remove('tiktok-mode');
+    window.closeSkillsVideo();
+  }
+};
+
+// Initialize first skill card as active on desktop onload
+if (window.innerWidth >= 768 && skillCards.length > 0) {
+  skillCards[0].classList.add('active');
+  handleSkillsVideoToggle(0);
+}
+
 skillCards.forEach((card, idx) => {
   card.style.cursor = 'pointer';
   card.addEventListener('click', () => {
@@ -2397,6 +2451,8 @@ skillCards.forEach((card, idx) => {
         card.classList.remove('active');
         if (skillsPanel) {
           skillsPanel.style.display = 'none';
+          skillsPanel.classList.remove('tiktok-mode');
+          window.closeSkillsVideo();
           // Move back to original parent to keep DOM structure clean
           if (originalSkillsPanelParent) {
             originalSkillsPanelParent.insertBefore(skillsPanel, originalSkillsPanelNextSibling);
@@ -2419,6 +2475,8 @@ skillCards.forEach((card, idx) => {
           skillsPanel.style.display = 'block';
           card.appendChild(skillsPanel); // Append under card text
           
+          handleSkillsVideoToggle(idx);
+
           // Trigger neon glitch flash effect
           skillsPanel.classList.remove('update-glitch');
           skillsPanel.offsetHeight; // Force reflow
@@ -2444,6 +2502,8 @@ skillCards.forEach((card, idx) => {
         skillsPanelTitle.textContent = data.title;
         skillsPanelDesc.textContent = data.desc;
         
+        handleSkillsVideoToggle(idx);
+
         // Trigger neon glitch flash effect
         if (skillsPanel) {
           skillsPanel.classList.remove('update-glitch');

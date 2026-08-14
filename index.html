@@ -467,35 +467,6 @@
                 <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
             </div>
-
-            <!-- 04: Kadro Tanıtım Sistemi -->
-            <div class="project-item" data-index="3" style="position: relative;">
-              <div class="project-info" style="width: 100%;">
-                <span class="num">04</span>
-                <h3 style="margin-top: 0.4rem; margin-bottom: 1.2rem; padding-right: 80px;">Kadro Tanıtım Sistemi</h3>
-                
-                <div class="guide-topics-list">
-                  <button class="guide-topic" data-guide="team-showcase" data-topic="team-ui">
-                    <span class="gt-num">04.1</span>
-                    <span class="gt-content">
-                      <span class="gt-title">3D Ekip Destesi</span>
-                      <span class="gt-summary">Arayüzde dikey yığılmış 3D derinlik algılı kart etkileşimi.</span>
-                    </span>
-                  </button>
-                  <button class="guide-topic" data-guide="team-showcase" data-topic="team-accordion">
-                    <span class="gt-num">04.2</span>
-                    <span class="gt-content">
-                      <span class="gt-title">Mobil Akordeon</span>
-                      <span class="gt-summary">Mobilde butonların hemen altına pürüzsüzce açılan panel.</span>
-                    </span>
-                  </button>
-                </div>
-              </div>
-              <button class="project-link guide-examine-btn" data-guide="team-showcase" data-topic="team-ui" aria-label="Kategoriyi İncele">
-                <span class="link-text">İNCELE</span>
-                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -519,6 +490,69 @@
             <span>SENSÖR VERİSİ: HAZIR</span>
             <span class="neon-flicker">BAĞLANTI: OPTİMİZE</span>
           </div>
+
+          <!-- Video Layer for Skills (TikTok mode) -->
+          <div id="skills-video-layer" style="
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            background: #000;
+            border-radius: inherit;
+            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+          ">
+            <video
+              id="skills-video-el"
+              src=""
+              autoplay
+              loop
+              muted
+              playsinline
+              style="
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: inherit;
+              "
+            ></video>
+            <!-- Close / collapse buton -->
+            <button onclick="closeSkillsVideo()" style="
+              position: absolute; top: 14px; right: 14px;
+              background: rgba(0,0,0,0.6); border: 1px solid rgba(76, 101, 253,0.5);
+              color: #fff; border-radius: 50%; width: 36px; height: 36px;
+              font-size: 1.1rem; cursor: pointer; z-index: 30;
+              display: flex; align-items: center; justify-content: center;
+              backdrop-filter: blur(8px);
+            ">×</button>
+
+            <!-- İncele (Examine) Button Overlay -->
+            <button id="skills-video-examine-btn" onclick="openTeamDrawer()" style="
+              position: absolute; bottom: 30px; left: 50%;
+              transform: translateX(-50%);
+              background: var(--primary-color);
+              border: 1px solid rgba(255, 255, 255, 0.25);
+              color: #ffffff;
+              font-family: var(--font-display);
+              font-weight: 800;
+              font-size: 0.95rem;
+              letter-spacing: 0.15rem;
+              padding: 0.8rem 2.2rem;
+              border-radius: 12px;
+              cursor: pointer;
+              z-index: 30;
+              display: flex;
+              align-items: center;
+              gap: 0.6rem;
+              box-shadow: 0 8px 25px rgba(76, 101, 253, 0.4);
+              transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            " onmouseover="this.style.transform='translateX(-50%) translateY(-2px) scale(1.05)';this.style.boxShadow='0 12px 35px rgba(76, 101, 253, 0.6)';"
+              onmouseout="this.style.transform='translateX(-50%)';this.style.boxShadow='0 8px 25px rgba(76, 101, 253, 0.4)';">
+              İNCELE
+              <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
         </div>
 
         <!-- Sağ Taraf: Beceriler Metin ve Kartlar -->
@@ -528,7 +562,7 @@
           <p>Yüksek performanslı 3D web grafikleri ve modern web ekosistemleri geliştirmek için kullandığım temel beceriler.</p>
           
           <div class="skills-grid">
-            <div class="skill-card">
+            <div class="skill-card active">
               <h4>Three.js / WebGL</h4>
               <p>Özel vertex/fragment shader yazımı, yüksek yoğunluklu matematiksel matrisler ve parçacık sistemleri.</p>
             </div>
