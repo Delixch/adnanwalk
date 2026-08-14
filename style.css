@@ -248,7 +248,7 @@ header {
 
 @keyframes panelGlitch {
   0% { transform: perspective(1200px) rotateY(24deg) rotateX(4deg) scale(0.98); opacity: 0.9; }
-  50% { transform: perspective(1200px) rotateY(26deg) rotateX(3deg) scale(1.01); border-color: #ffaa44; }
+  50% { transform: perspective(1200px) rotateY(26deg) rotateX(3deg) scale(1.01); border-color: #94EAEF; }
   100% { transform: perspective(1200px) rotateY(24deg) rotateX(4deg) scale(1.0); }
 }
 
